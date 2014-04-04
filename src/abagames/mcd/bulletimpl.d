@@ -60,7 +60,7 @@ public class BulletImpl: Bullet {
   public BulletMLParser* getParser() {
     return parserParam[parserIdx].parser;
   }
-  
+
   public void resetParser() {
     parserIdx = 0;
   }

@@ -58,7 +58,7 @@ public class ShapeGroup: Shape {
     foreach (Shape s; shapes)
       s.recordLinePoints(lp);
   }
-  
+
   public void drawShadow(LinePoint lp) {
     foreach (Shape s; shapes)
       s.drawShadow(lp);

@@ -75,7 +75,7 @@ public class BarrageManager {
   private static BulletMLParserTinyXML* loadInstance(char[] dirName, char[] fileName) {
     char[] barrageName = dirName ~ "/" ~ fileName;
     Logger.info("Load BulletML: " ~ barrageName);
-    parser[dirName][fileName] = 
+    parser[dirName][fileName] =
       BulletMLParserTinyXML_new(std.string.toStringz(BARRAGE_DIR_NAME ~ "/" ~ barrageName));
     BulletMLParserTinyXML_parse(parser[dirName][fileName]);
     return parser[dirName][fileName];

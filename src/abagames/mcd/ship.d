@@ -385,7 +385,7 @@ public class Ship: OdeActor, BulletTarget {
 
   public void moveInTitle() {
     titleCnt++;
-    float tcr = cast(float) (titleCnt % 600) / 600; 
+    float tcr = cast(float) (titleCnt % 600) / 600;
     if (tcr < 0.3f) {
       _pos.x = (tcr - 0.15f) / 0.15f * field.size.x;
       _pos.y = -field.size.y;

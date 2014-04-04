@@ -110,7 +110,7 @@ public class TwinStickPad: Input {
       }
     }
     if (keys[SDLK_z] == SDL_PRESSED || keys[SDLK_PERIOD] == SDL_PRESSED ||
-        keys[SDLK_LCTRL] == SDL_PRESSED || keys[SDLK_RCTRL] == SDL_PRESSED || 
+        keys[SDLK_LCTRL] == SDL_PRESSED || keys[SDLK_RCTRL] == SDL_PRESSED ||
         btn1) {
       if (!buttonReversed)
         state.button |= TwinStickPadState.Button.A;

@@ -57,7 +57,7 @@ public class ActorPool(T) {
       actorIdx--;
       if (actorIdx < 0)
         actorIdx = actor.length - 1;
-      if (!actor[actorIdx].exists) 
+      if (!actor[actorIdx].exists)
         return actor[actorIdx];
     }
     return null;
