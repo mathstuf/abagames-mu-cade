@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<!DOCTYPE bulletml SYSTEM "http://www.asahi-net.or.jp/~cs8k-cyu/bulletml/bulletml.dtd">
+
+<bulletml type="vertical"
+          xmlns="http://www.asahi-net.or.jp/~cs8k-cyu/bulletml">
+
+<action label="top">
+  <actionRef label="round">
+    <param>$rank*15</param>
+    <param>180/($rank*15+2)</param>
+  </actionRef>
+</action>
+
+<action label="round">
+  <fire>
+    <direction type="relative">0</direction>
+    <bullet/>
+  </fire>
+  <repeat> <times>1+$1</times>
+  <action>
+    <fire>
+      <direction type="sequence">$2</direction>
+      <bullet/>
+    </fire>
+  </action>
+  </repeat>
+  <fire>
+    <direction type="relative">-$2</direction>
+    <bullet/>
+  </fire>
+  <repeat> <times>$1</times>
+  <action>
+    <fire>
+      <direction type="sequence">-$2</direction>
+      <bullet/>
+    </fire>
+  </action>
+  </repeat>
+</action>
+
+</bulletml>
