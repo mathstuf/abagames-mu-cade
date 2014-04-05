@@ -78,6 +78,7 @@ public int boot(string[] args) {
   try {
     parseArgs(args, screen);
   } catch (Exception e) {
+    Logger.info(e.toString());
     return EXIT_FAILURE;
   }
   mainLoop.loop();
