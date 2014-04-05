@@ -8,7 +8,7 @@ module abagames.util.sdl.twinstickpad;
 private import std.string;
 private import std.stream;
 private import std.math;
-private import SDL;
+private import derelict.sdl2.sdl;
 private import abagames.util.vector;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;
@@ -45,7 +45,7 @@ public class TwinStickPad: Input {
   }
 
   public void handleEvent(SDL_Event *event) {
-    keys = SDL_GetKeyState(null);
+    keys = SDL_GetKeyboardState(null);
   }
 
   public TwinStickPadState getState() {
@@ -64,7 +64,7 @@ public class TwinStickPad: Input {
         state.right.x = state.right.y = 0;
       } else {
         ry = -ry;
-        float rd = atan2(rx, ry) * reverse + rotate;
+        float rd = atan2(cast(float) rx, cast(float) ry) * reverse + rotate;
         assert(rd <>= 0);
         float rl = sqrt(cast(float) rx * rx + cast(float) ry * ry);
         assert(rl <>= 0);
@@ -74,25 +74,25 @@ public class TwinStickPad: Input {
     } else {
       state.left.x = state.left.y = state.right.x = state.right.y = 0;
     }
-    if (keys[SDLK_RIGHT] == SDL_PRESSED || keys[SDLK_KP6] == SDL_PRESSED ||
-        keys[SDLK_d] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_RIGHT] == SDL_PRESSED || keys[SDL_SCANCODE_KP_6] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_D] == SDL_PRESSED)
       state.left.x = 1;
-    if (keys[SDLK_l] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_L] == SDL_PRESSED)
       state.right.x = 1;
-    if (keys[SDLK_LEFT] == SDL_PRESSED || keys[SDLK_KP4] == SDL_PRESSED ||
-        keys[SDLK_a] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_LEFT] == SDL_PRESSED || keys[SDL_SCANCODE_KP_4] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_A] == SDL_PRESSED)
       state.left.x = -1;
-    if (keys[SDLK_j] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_J] == SDL_PRESSED)
       state.right.x = -1;
-    if (keys[SDLK_DOWN] == SDL_PRESSED || keys[SDLK_KP2] == SDL_PRESSED ||
-        keys[SDLK_s] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_DOWN] == SDL_PRESSED || keys[SDL_SCANCODE_KP_2] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_S] == SDL_PRESSED)
       state.left.y = -1;
-    if (keys[SDLK_k] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_K] == SDL_PRESSED)
       state.right.y = -1;
-    if (keys[SDLK_UP] == SDL_PRESSED ||  keys[SDLK_KP8] == SDL_PRESSED ||
-        keys[SDLK_w] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_UP] == SDL_PRESSED ||  keys[SDL_SCANCODE_KP_8] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_W] == SDL_PRESSED)
       state.left.y = 1;
-    if (keys[SDLK_i] == SDL_PRESSED)
+    if (keys[SDL_SCANCODE_I] == SDL_PRESSED)
       state.right.y = 1;
     state.button = 0;
     int btn1 = 0, btn2 = 0;
@@ -109,18 +109,18 @@ public class TwinStickPad: Input {
           btn2 = 1;
       }
     }
-    if (keys[SDLK_z] == SDL_PRESSED || keys[SDLK_PERIOD] == SDL_PRESSED ||
-        keys[SDLK_LCTRL] == SDL_PRESSED || keys[SDLK_RCTRL] == SDL_PRESSED ||
+    if (keys[SDL_SCANCODE_Z] == SDL_PRESSED || keys[SDL_SCANCODE_PERIOD] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_LCTRL] == SDL_PRESSED || keys[SDL_SCANCODE_RCTRL] == SDL_PRESSED ||
         btn1) {
       if (!buttonReversed)
         state.button |= TwinStickPadState.Button.A;
       else
         state.button |= TwinStickPadState.Button.B;
     }
-    if (keys[SDLK_x] == SDL_PRESSED || keys[SDLK_SLASH] == SDL_PRESSED ||
-        keys[SDLK_LALT] == SDL_PRESSED || keys[SDLK_RALT] == SDL_PRESSED ||
-        keys[SDLK_LSHIFT] == SDL_PRESSED || keys[SDLK_RSHIFT] == SDL_PRESSED ||
-        keys[SDLK_RETURN] == SDL_PRESSED || keys[SDLK_SPACE] == SDL_PRESSED ||
+    if (keys[SDL_SCANCODE_X] == SDL_PRESSED || keys[SDL_SCANCODE_SLASH] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_LALT] == SDL_PRESSED || keys[SDL_SCANCODE_RALT] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_LSHIFT] == SDL_PRESSED || keys[SDL_SCANCODE_RSHIFT] == SDL_PRESSED ||
+        keys[SDL_SCANCODE_RETURN] == SDL_PRESSED || keys[SDL_SCANCODE_SPACE] == SDL_PRESSED ||
         btn2) {
       if (!buttonReversed)
         state.button |= TwinStickPadState.Button.B;
@@ -161,7 +161,7 @@ public class TwinStickPadState {
   int button;
  private:
 
-  invariant {
+  invariant() {
     assert(left.x >= -1 && left.x <= 1);
     assert(left.y >= -1 && left.y <= 1);
     assert(right.x >= -1 && right.x <= 1);
@@ -226,7 +226,8 @@ public class RecordableTwinStickPad: TwinStickPad {
   mixin RecordableInput!(TwinStickPadState);
  private:
 
-  public TwinStickPadState getState(bool doRecord = true) {
+  alias TwinStickPad.getState getState;
+  public TwinStickPadState getState(bool doRecord) {
     TwinStickPadState s = super.getState();
     if (doRecord)
       record(s);

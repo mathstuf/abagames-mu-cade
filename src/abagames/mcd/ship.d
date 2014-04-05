@@ -6,8 +6,8 @@
 module abagames.mcd.ship;
 
 private import std.math;
-private import opengl;
-private import ode.ode;
+private import derelict.opengl3.gl;
+private import derelict.ode.ode;
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.math;
@@ -78,7 +78,7 @@ public class Ship: OdeActor, BulletTarget {
   int titleCnt;
   bool _replayMode;
 
-  invariant {
+  invariant() {
     if (_pos && field) {
       assert(_pos.x > -field.size.x * 100);
       assert(_pos.x <  field.size.x * 100);
@@ -127,7 +127,7 @@ public class Ship: OdeActor, BulletTarget {
     linePoint = new LinePoint(field);
     linePoint.setSpectrumParams(0, 1.0f, 0, 1.0f);
     subShape = new CenterShape;
-    foreach (inout ShipTail t; tails)
+    foreach (ref ShipTail t; tails)
       t = new ShipTail(world, field, this, particles, connectedParticles);
     super.init();
   }
@@ -183,10 +183,10 @@ public class Ship: OdeActor, BulletTarget {
     remove();
   }
 
-  public void move() {
+  public override void move() {
     TwinStickPadState input;
     if (!_replayMode) {
-      input = pad.getState();
+      input = pad.getState(true);
     } else {
       try {
         input = pad.replay();
@@ -347,7 +347,7 @@ public class Ship: OdeActor, BulletTarget {
     }
   }
 
-  public override void collide(OdeActor actor, inout bool hasCollision, inout bool checkFeedback) {
+  public override void collide(OdeActor actor, ref bool hasCollision, ref bool checkFeedback) {
     hasCollision = checkFeedback = false;
     if (cast(Wall) actor)
       hasCollision = true;
@@ -432,14 +432,14 @@ public class Ship: OdeActor, BulletTarget {
   public void recordLinePoints() {
     glPushMatrix();
     Screen.glTranslate(_pos);
-    glMultMatrixd(rot);
+    glMultMatrixd(rot.ptr);
     linePoint.beginRecord();
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
     glPopMatrix();
   }
 
-  public void draw() {
+  public override void draw() {
     shots.draw();
     enhancedShots.draw();
     if (restartCnt > 0)
@@ -453,7 +453,7 @@ public class Ship: OdeActor, BulletTarget {
     linePoint.draw();
     glPushMatrix();
     Screen.glTranslate(_pos);
-    glMultMatrixd(rot);
+    glMultMatrixd(rot.ptr);
     subShape.draw();
     glPopMatrix();
   }
@@ -525,7 +525,7 @@ public class ShipTail: OdeActor {
   LinePoint linePoint;
   dJointID joint;
 
-  invariant {
+  invariant() {
     if (_pos) {
       assert(_pos.x <>= 0);
       assert(_pos.y <>= 0);
@@ -593,7 +593,7 @@ public class ShipTail: OdeActor {
     linePoint.init();
   }
 
-  public void move() {
+  public override void move() {
     dReal *p = dBodyGetPosition(_bodyId);
     _pos.x = p[0];
     _pos.y = p[1];
@@ -622,7 +622,7 @@ public class ShipTail: OdeActor {
     super.remove();
   }
 
-  public override void collide(OdeActor actor, inout bool hasCollision, inout bool checkFeedback) {
+  public override void collide(OdeActor actor, ref bool hasCollision, ref bool checkFeedback) {
     hasCollision = checkFeedback = false;
     if (cast(Wall) actor || cast(ShipTail) actor || cast(Ship) actor)
       hasCollision = true;
@@ -643,7 +643,7 @@ public class ShipTail: OdeActor {
   public void recordLinePoints() {
     glPushMatrix();
     Screen.glTranslate(_pos);
-    glMultMatrixd(rot);
+    glMultMatrixd(rot.ptr);
     glScalef(size.x, size.y, size.z);
     linePoint.beginRecord();
     shape.recordLinePoints(linePoint);
@@ -651,7 +651,7 @@ public class ShipTail: OdeActor {
     glPopMatrix();
   }
 
-  public void draw() {
+  public override void draw() {
     linePoint.drawSpectrum();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     shape.drawShadow(linePoint);

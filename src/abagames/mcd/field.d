@@ -6,9 +6,8 @@
 module abagames.mcd.field;
 
 private import std.math;
-private import opengl;
-private import openglu;
-private import ode.ode;
+private import derelict.opengl3.gl;
+private import derelict.ode.ode;
 private import abagames.util.vector;
 private import abagames.util.math;
 private import abagames.util.rand;
@@ -20,6 +19,32 @@ private import abagames.mcd.shape;
 private import abagames.mcd.particle;
 private import abagames.mcd.ship;
 private import abagames.mcd.gamemanager;
+
+private static float mag(float x, float y, float z) {
+  return sqrt(x * x + y * y + z * z);
+}
+
+private static void normalize(ref float x, ref float y, ref float z) {
+  float d = mag(x, y, z);
+  x /= d;
+  y /= d;
+  z /= d;
+}
+
+private static float dot2(
+    float x1, float y1,
+    float x2, float y2) {
+  return x1 * x2 - y1 * y2;
+}
+
+private static void cross(
+    ref float x, ref float y, ref float z,
+    float x1, float y1, float z1,
+    float x2, float y2, float z2) {
+  x = dot2(y1, z1, z2, y2);
+  y = dot2(z1, x1, x2, z2);
+  z = dot2(x1, y1, y2, x2);
+}
 
 /**
  * Game field (floor, stars and overlay).
@@ -42,7 +67,7 @@ public class Field {
   Texture _titleTexture;
   int cnt;
 
-  invariant {
+  invariant() {
     if(eyePos) {
       assert(eyePos.x < 100 && eyePos.x > -100);
       assert(eyePos.y < 100 && eyePos.y > -100);
@@ -133,17 +158,46 @@ public class Field {
     eyePos.y += (ty - eyePos.y) * 0.05f;
   }
 
+  private void lookAt(float ex, float ey, float ez,
+                      float lx, float ly, float lz,
+                      float ux, float uy, float uz) {
+    float fx, fy, fz;
+    fx = lx - ex;
+    fy = ly - ey;
+    fz = lz - ez;
+    normalize(fx, fy, fz);
+    float sx, sy, sz;
+    cross(sx, sy, sz,
+          fx, fy, fz,
+          ux, uy, uz);
+    normalize(sx, sy, sz);
+    float vx, vy, vz;
+    cross(vx, vy, vz,
+          sx, sy, sz,
+          fx, fy, fz);
+    normalize(vx, vy, vz);
+    float[] matrix = [
+      sx, vx, -fx, 0.,
+      sy, vy, -fy, 0.,
+      sz, vz, -fz, 0.,
+      0., 0., 0., 1.];
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(matrix.ptr);
+    glTranslatef(-ex, -ey, -ez);
+  }
+
   public void setLookAt() {
     glMatrixMode(GL_PROJECTION);
     screen.setPerspective();
-    gluLookAt(eyePos.x, eyePos.y + EYE_POS_Y, EYE_POS_Z, eyePos.x, eyePos.y, 0, 0, 1, 0);
+    lookAt(eyePos.x, eyePos.y + EYE_POS_Y, EYE_POS_Z, eyePos.x, eyePos.y, 0, 0, 1, 0);
     glMatrixMode(GL_MODELVIEW);
   }
 
   public void setLookAtTitle() {
     glMatrixMode(GL_PROJECTION);
     screen.setPerspective();
-    gluLookAt(0, EYE_POS_Y, EYE_POS_Z, 0, 0, 0, 0, 1, 0);
+    lookAt(0, EYE_POS_Y, EYE_POS_Z, 0, 0, 0, 0, 1, 0);
     glMatrixMode(GL_MODELVIEW);
   }
 
@@ -294,7 +348,7 @@ public class Field {
     return (_size.contains(p.x, p.y) && fabs(p.z) < 1);
   }
 
-  public Vector size() {
+  public const(Vector) size() const {
     return _size;
   }
 

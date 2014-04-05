@@ -5,8 +5,7 @@
  */
 module abagames.mcd.screen;
 
-private import opengl;
-private import openglu;
+private import derelict.opengl3.gl;
 private import abagames.util.sdl.screen3d;
 private import abagames.mcd.field;
 
@@ -15,10 +14,10 @@ private import abagames.mcd.field;
  */
 public class Screen: Screen3D {
  private:
-  const char[] CAPTION = "Mu-cade";
+  const string CAPTION = "Mu-cade";
   Field field;
 
-  protected void init() {
+  protected override void init() {
     setCaption(CAPTION);
     glLineWidth(1);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -37,7 +36,7 @@ public class Screen: Screen3D {
     screenResized();
   }
 
-  protected void close() {}
+  protected override void close() {}
 
   public static void drawLine(float x1, float y1, float z1,
                               float x2, float y2, float z2, float a = 1) {

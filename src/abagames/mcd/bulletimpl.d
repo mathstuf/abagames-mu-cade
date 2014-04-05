@@ -5,8 +5,10 @@
  */
 module abagames.mcd.bulletimpl;
 
-private import bulletml;
+private import std.math;
+private import bml = bulletml.bulletml;
 private import abagames.util.bulletml.bullet;
+private import abagames.util.vector;
 private import abagames.mcd.bullet;
 private import abagames.mcd.bullettarget;
 
@@ -25,6 +27,15 @@ public class BulletImpl: Bullet {
 
   public this(int id) {
     super(id);
+  }
+
+  public override double getAimDirection() {
+    Vector b = pos;
+    Vector t = activeTarget;
+    float xrev = xReverse;
+    float yrev = yReverse;
+    float ox = t.x - b.x;
+    return rtod((atan2(-ox, t.y - b.y) * xrev + PI / 2) * yrev - PI / 2);
   }
 
   public void setParamFirst(ParserParam[] parserParam,
@@ -57,7 +68,7 @@ public class BulletImpl: Bullet {
     }
   }
 
-  public BulletMLParser* getParser() {
+  public bml.ResolvedBulletML getParser() {
     return parserParam[parserIdx].parser;
   }
 
@@ -85,16 +96,16 @@ public class BulletImpl: Bullet {
 
 public class ParserParam {
  public:
-  BulletMLParser *parser;
+  bml.ResolvedBulletML parser;
   float rank;
   float speed;
 
-  invariant {
+  invariant() {
     assert(rank >= 0 && rank <= 1);
     assert(speed > 0 && speed < 10);
   }
 
-  public this(BulletMLParser *p, float r, float s) {
+  public this(bml.ResolvedBulletML p, float r, float s) {
     parser = p;
     rank = r;
     speed = s;

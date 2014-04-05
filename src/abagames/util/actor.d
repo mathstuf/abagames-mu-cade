@@ -13,7 +13,7 @@ public class Actor {
   bool _exists;
  private:
 
-  public bool exists() {
+  public bool exists() nothrow {
     return _exists;
   }
 
@@ -33,7 +33,7 @@ public class ActorPool(T) {
  public:
   T[] actor;
  protected:
-  int actorIdx = 0;
+  long actorIdx = 0;
  private:
 
   public this() {}
@@ -44,7 +44,7 @@ public class ActorPool(T) {
 
   protected void createActors(int n, Object[] args = null) {
     actor = new T[n];
-    foreach (inout T a; actor) {
+    foreach (ref T a; actor) {
       a = new T;
       a.exists = false;
       a.init(args);
@@ -63,7 +63,7 @@ public class ActorPool(T) {
     return null;
   }
 
-  public T getInstanceForced() {
+  public T getInstanceForced() nothrow {
     actorIdx--;
     if (actorIdx < 0)
       actorIdx = actor.length - 1;

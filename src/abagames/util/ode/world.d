@@ -5,7 +5,7 @@
  */
 module abagames.util.ode.world;
 
-private import ode.ode;
+private import derelict.ode.ode;
 private import abagames.util.ode.odeactor;
 
 /**
@@ -28,6 +28,7 @@ public class World {
   bool initialized = false;
 
   public void init() {
+    DerelictODE.load();
     world = dWorldCreate();
     dWorldSetContactMaxCorrectingVel(world, CONTACT_MAX_CORRECTING_VEL);
     dWorldSetContactSurfaceLayer (world, CONTACT_SURFACE_LAYER);
@@ -101,7 +102,7 @@ extern (C) {
     }
   }
 
-  void nearCallback (void *data, dGeomID o1, dGeomID o2) {
+  void nearCallback (void *data, dGeomID o1, dGeomID o2) nothrow {
     dBodyID b1, b2;
     b1 = dGeomGetBody(o1);
     b2 = dGeomGetBody(o2);

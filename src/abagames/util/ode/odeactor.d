@@ -6,8 +6,8 @@
 module abagames.util.ode.odeactor;
 
 private import std.math;
-private import opengl;
-private import ode.ode;
+private import derelict.opengl3.gl;
+private import derelict.ode.ode;
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.ode.world;
@@ -54,7 +54,7 @@ public class OdeActor: Actor {
     transformedGeomId = new dGeomID[GEOM_NUM];
     if (checkFeedback) {
       contactJoint = new ContactJoint[CONTACT_JOINT_NUM];
-      foreach (inout ContactJoint cj; contactJoint) {
+      foreach (ref ContactJoint cj; contactJoint) {
         cj.pos = new Vector3;
         cj.feedbackForce = new Vector3;
       }
@@ -309,7 +309,7 @@ public class OdeActor: Actor {
     dBodySetRotation(_bodyId, matrix);
   }
 
-  public void collide(OdeActor actor, inout bool hasCollision, inout bool checkFeedback) {
+  public void collide(OdeActor actor, ref bool hasCollision, ref bool checkFeedback) nothrow {
     hasCollision = checkFeedback = false;
   }
 
@@ -317,7 +317,7 @@ public class OdeActor: Actor {
     contactJointNum = 0;
   }
 
-  public void addContactJoint(float x, float y, float z, dJointID id, int bodyIdx) {
+  public void addContactJoint(float x, float y, float z, dJointID id, int bodyIdx) nothrow {
     if (contactJointNum >= CONTACT_JOINT_NUM)
       return;
     ContactJoint* cj = &(contactJoint[contactJointNum]);
@@ -401,7 +401,7 @@ public class OdeActorPool(T): ActorPool!(T) {
 }
 
 extern (C) {
-  void checkCollideNearCallback (void *data, dGeomID o1, dGeomID o2) {
+  void checkCollideNearCallback (void *data, dGeomID o1, dGeomID o2) nothrow {
     OdeActor.collided = true;
   }
 }

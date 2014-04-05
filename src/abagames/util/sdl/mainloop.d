@@ -5,7 +5,7 @@
  */
 module abagames.util.sdl.mainloop;
 
-private import SDL;
+private import derelict.sdl2.sdl;
 private import abagames.util.logger;
 private import abagames.util.rand;
 private import abagames.util.prefmanager;
@@ -93,7 +93,7 @@ public class MainLoop {
       frame = cast(int) (nowTick - prvTickCount) / itv;
       if (frame <= 0) {
         frame = 1;
-        SDL_Delay(prvTickCount + itv - nowTick);
+        SDL_Delay(cast(int)(prvTickCount + itv - nowTick));
         if (accframe) {
           prvTickCount = SDL_GetTicks();
         } else {

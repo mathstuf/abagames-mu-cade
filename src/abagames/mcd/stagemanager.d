@@ -8,8 +8,8 @@ module abagames.mcd.stagemanager;
 private import std.math;
 private import std.string;
 private import std.stream;
-private import opengl;
-private import ode.ode;
+private import derelict.opengl3.gl;
+private import derelict.ode.ode;
 private import abagames.util.tokenizer;
 private import abagames.util.iterator;
 private import abagames.util.rand;
@@ -48,7 +48,7 @@ public class StageManager {
     this.bullets = bullets;
     this.enemies = enemies;
     rand = new Rand;
-    foreach (inout Appearance a; appearances)
+    foreach (ref Appearance a; appearances)
       a = new Appearance(field, ship, bullets, world, this);
     _blockSpec = new Block(field, ship, bullets, world);
   }
@@ -178,6 +178,8 @@ public class StageManager {
         addAppearance(rank, Appearance.EnemyType.CHASE, 1, 2, 250);
         appearanceCnt += 2000;
         break;
+      default:
+        assert(0);
       }
     }
     bool forced = false;
@@ -301,6 +303,8 @@ public class Appearance {
       blockAppPos.x = field.size.x * 2;
       blockAppPos.y = field.size.y * 2;
       break;
+    default:
+      assert(0);
     }
     this.num = num;
     this.interval = interval;
@@ -339,6 +343,8 @@ public class Appearance {
           case 2:
             zs *= (2 + rand.nextFloat(2));
             break;
+          default:
+            assert(0);
           }
         }
         if (fabs(blockAppPos.x) >= field.size.x)
@@ -352,6 +358,8 @@ public class Appearance {
         blockAppPos.x += rand.nextSignedFloat(0.5f);
         blockAppPos.y += rand.nextSignedFloat(0.5f);
         break;
+      default:
+        assert(0);
       }
       num--;
     }

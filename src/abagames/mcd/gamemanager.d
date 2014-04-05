@@ -6,10 +6,9 @@
 module abagames.mcd.gamemanager;
 
 private import std.math;
-private import SDL;
-private import opengl;
-private import openglu;
-private import ode.ode;
+private import derelict.sdl2.sdl;
+private import derelict.opengl3.gl;
+private import derelict.ode.ode;
 private import abagames.util.rand;
 private import abagames.util.sdl.gamemanager;
 private import abagames.util.sdl.twinstickpad;
@@ -38,7 +37,7 @@ private import abagames.mcd.prefmanager;
  */
 public class GameManager: abagames.util.sdl.gamemanager.GameManager {
  private:
-  static const char[] LAST_REPLAY_FILE_NAME = "last.rpl";
+  static const string LAST_REPLAY_FILE_NAME = "last.rpl";
   static const int RANK_DOWN_INTERVAL = 60 * 1000;
   static const int BGM_CHANGE_INTERVAL = 2 * 60 * 1000;
   static const enum GameState {
@@ -208,7 +207,6 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     world.close();
     SoundManager.haltBgm();
     Letter.close();
-    BarrageManager.unload();
   }
 
   public override void move() {
@@ -235,6 +233,8 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     case GameState.TITLE:
       ship.moveInTitle();
       break;
+    default:
+      assert(0);
     }
     particles.move();
     connectedParticles.move();
@@ -326,7 +326,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     }
   }
 
-  public void addScore(int sc) {
+  public void addScore(int sc) nothrow {
     if (state == GameState.TITLE || _isGameOver)
       return;
     score += sc;
@@ -367,10 +367,12 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 
   public override void draw() {
     SDL_Event e = mainLoop.event;
-    if (e.type == SDL_VIDEORESIZE) {
-      SDL_ResizeEvent re = e.resize;
-      if (re.w > 150 && re.h > 100)
-        screen.resized(re.w, re.h);
+    if (e.type == SDL_WINDOWEVENT_RESIZED) {
+      SDL_WindowEvent we = e.window;
+      Sint32 w = we.data1;
+      Sint32 h = we.data2;
+      if (w > 150 && h > 100)
+        screen.resized(w, h);
     }
     if (state == GameState.IN_GAME || state == GameState.REPLAY)
       field.setLookAt();
@@ -426,6 +428,8 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     case GameState.TITLE:
       titleManager.draw();
       break;
+    default:
+      assert(0);
     }
   }
 
@@ -442,22 +446,22 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   private void saveLastReplay() {
     try {
       saveReplay(LAST_REPLAY_FILE_NAME);
-    } catch (Object o) {}
+    } catch (Throwable o) {}
   }
 
   private void loadLastReplay() {
     try {
       loadReplay(LAST_REPLAY_FILE_NAME);
-    } catch (Object o) {
+    } catch (Throwable o) {
       resetReplay();
     }
   }
 
-  private void saveReplay(char[] fileName) {
+  private void saveReplay(string fileName) {
     _replayData.save(fileName);
   }
 
-  private void loadReplay(char[] fileName) {
+  private void loadReplay(string fileName) {
     _replayData = new ReplayData;
     _replayData.load(fileName);
   }

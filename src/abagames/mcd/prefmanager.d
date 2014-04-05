@@ -14,7 +14,7 @@ private import abagames.util.prefmanager;
 public class PrefManager: abagames.util.prefmanager.PrefManager {
  private:
   static const int VERSION_NUM = 10;
-  static const char[] PREF_FILE_NAME = "mcd.prf";
+  static const string PREF_FILE_NAME = "mcd.prf";
   PrefData _prefData;
 
   public this() {
@@ -22,7 +22,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   }
 
   public void load() {
-    auto File fd = new File;
+    scope File fd = new File;
     try {
       int ver;
       fd.open(PREF_FILE_NAME);
@@ -31,7 +31,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
         throw new Error("Wrong version num");
       else
         _prefData.load(fd);
-    } catch (Object e) {
+    } catch (Throwable e) {
       _prefData.init();
     } finally {
       if (fd.isOpen())
@@ -40,7 +40,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   }
 
   public void save() {
-    auto File fd = new File;
+    scope File fd = new File;
     fd.create(PREF_FILE_NAME);
     fd.write(VERSION_NUM);
     _prefData.save(fd);

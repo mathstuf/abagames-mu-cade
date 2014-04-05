@@ -5,6 +5,7 @@
  */
 module abagames.util.logger;
 
+private import std.conv;
 private import std.cstream;
 private import std.string;
 
@@ -18,7 +19,7 @@ private import std.c.windows.windows;
 
 public class Logger {
 
-  public static void info(char[] msg, bool nline = true) {
+  public static void info(string msg, bool nline = true) {
     // Win32 exe crashes if it writes something to stderr.
     /*if (nline)
       std.cstream.derr.writeLine(msg);
@@ -33,11 +34,11 @@ public class Logger {
       std.cstream.derr.writeString(std.string.toString(n) ~ " ");*/
   }
 
-  private static void putMessage(char[] msg) {
+  private static void putMessage(string msg) {
     MessageBoxA(null, std.string.toStringz(msg), "Error", MB_OK | MB_ICONEXCLAMATION);
   }
 
-  public static void error(char[] msg) {
+  public static void error(string msg) {
     putMessage("Error: " ~ msg);
   }
 
@@ -54,7 +55,7 @@ public class Logger {
 
 public class Logger {
 
-  public static void info(char[] msg, bool nline = true) {
+  public static void info(string msg, bool nline = true) {
     if (nline)
       std.cstream.derr.writeLine(msg);
     else
@@ -63,12 +64,12 @@ public class Logger {
 
   public static void info(double n, bool nline = true) {
     if (nline)
-      std.cstream.derr.writeLine(std.string.toString(n));
+      std.cstream.derr.writeLine(to!string(n));
     else
-      std.cstream.derr.writeString(std.string.toString(n) ~ " ");
+      std.cstream.derr.writeString(to!string(n) ~ " ");
   }
 
-  public static void error(char[] msg) {
+  public static void error(string msg) {
     std.cstream.derr.writeLine("Error: " ~ msg);
   }
 
@@ -79,7 +80,7 @@ public class Logger {
   public static void error(Error e) {
     std.cstream.derr.writeLine("Error: " ~ e.toString());
     if (e.next)
-      error(e.next);
+      error(to!Exception(e.next));
   }
 }
 

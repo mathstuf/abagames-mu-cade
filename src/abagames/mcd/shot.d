@@ -7,8 +7,8 @@ module abagames.mcd.shot;
 
 private import std.math;
 private import std.string;
-private import opengl;
-private import ode.ode;
+private import derelict.opengl3.gl;
+private import derelict.ode.ode;
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.rand;
@@ -37,7 +37,7 @@ public template ShotImpl() {
   ShapeGroup shape;
   LinePoint linePoint;
 
-  invariant {
+  invariant() {
     if (pos) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);
@@ -82,7 +82,7 @@ public template ShotImpl() {
     doCollide();
   }
 
-  public override void collide(OdeActor actor, inout bool hasCollision, inout bool checkFeedback) {
+  public override void collide(OdeActor actor, ref bool hasCollision, ref bool checkFeedback) {
     hasCollision = checkFeedback = false;
     Enemy e = cast(Enemy) actor;
     if (e) {
@@ -121,7 +121,7 @@ public template ShotImpl() {
     linePoint.draw();
   }
 
-  public float deg() {
+  public float deg() nothrow {
     return _deg;
   }
 }

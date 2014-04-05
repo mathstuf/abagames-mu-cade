@@ -6,7 +6,7 @@
 module abagames.mcd.letter;
 
 private import std.math;
-private import opengl;
+private import derelict.opengl3.gl;
 private import abagames.util.sdl.displaylist;
 private import abagames.mcd.screen;
 
@@ -107,7 +107,7 @@ public class Letter {
     return idx;
   }
 
-  public static void drawString(char[] str, float lx, float y, float s,
+  public static void drawString(string str, float lx, float y, float s,
                                 int d = Direction.TO_RIGHT,
                                 bool rev = false, float od = 0) {
     lx += LETTER_WIDTH * s / 2;
@@ -128,6 +128,8 @@ public class Letter {
     case Direction.TO_UP:
       ld = 270;
       break;
+    default:
+      assert(0);
     }
     ld += od;
     foreach (char c; str) {
@@ -152,6 +154,8 @@ public class Letter {
         case Direction.TO_UP:
           y -= s * LETTER_WIDTH;
           break;
+        default:
+          assert(0);
         }
       } else {
         x += cos(ld * PI / 180) * s * LETTER_WIDTH;

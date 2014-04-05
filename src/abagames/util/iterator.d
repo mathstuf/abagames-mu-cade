@@ -35,10 +35,10 @@ public class ArrayIterator(T) {
   }
 }
 
-alias ArrayIterator!(char[]) StringIterator;
+alias ArrayIterator!string StringIterator;
 
 public class NoMoreItemsException: Exception {
-  public this(char[] msg) {
+  public this(string msg) {
     super(msg);
   }
 }

@@ -6,7 +6,7 @@
 module abagames.mcd.particle;
 
 private import std.math;
-private import opengl;
+private import derelict.opengl3.gl;
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.rand;
@@ -35,7 +35,7 @@ public class Particle: Actor {
   float decayRatio;
   LinePoint linePoint;
 
-  invariant {
+  invariant() {
     if (pos) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);
@@ -74,25 +74,25 @@ public class Particle: Actor {
 
   public void set(Vector p,
                   float vx, float vy, float sz, float r, float g, float b,
-                  int c = 60) {
+                  int c = 60) nothrow {
     set(p.x, p.y, 0, vx, vy, 0, sz, r, g, b, c);
   }
 
   public void set(Vector3 p,
                   float vx, float vy, float sz, float r, float g, float b,
-                  int c = 60) {
+                  int c = 60) nothrow {
     set(p.x, p.y, p.z, vx, vy, 0, sz, r, g, b, c);
   }
 
   public void set(float x, float y,
                   float vx, float vy, float sz, float r, float g, float b,
-                  int c = 60) {
+                  int c = 60) nothrow {
     set(x, y, 0, vx, vy, 0, sz, r, g, b, c);
   }
 
   public void set(float x, float y, float z,
                   float vx, float vy, float vz, float sz, float r, float g, float b,
-                  int c = 60) {
+                  int c = 60) nothrow {
     pos.x = x;
     pos.y = y;
     pos.z = z;
@@ -171,7 +171,7 @@ public class ConnectedParticle: Actor {
   ConnectedParticle prevParticle;
   LinePoint linePoint;
 
-  invariant {
+  invariant() {
     if (_pos) {
       assert(_pos.x <>= 0);
       assert(_pos.y <>= 0);
@@ -286,7 +286,7 @@ public class ConnectedParticle: Actor {
     glPushMatrix();
     Screen.glTranslate(_pos);
     if (enableRotate)
-      glMultMatrixd(rot);
+      glMultMatrixd(rot.ptr);
     linePoint.beginRecord();
     linePoint.record(0, 0, 0);
     linePoint.record((prevParticle.pos.x - _pos.x) * 2,
@@ -358,7 +358,7 @@ public class TailParticle: Actor {
   ShapeGroup shape;
   LinePoint linePoint;
 
-  invariant {
+  invariant() {
     if (pos) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);
@@ -483,7 +483,7 @@ public class StarParticle: Actor {
   float size;
   int cnt;
 
-  invariant {
+  invariant() {
     if (pos) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);
@@ -542,7 +542,7 @@ public class NumIndicator: Actor {
   int cnt;
   int num1, num2;
 
-  invariant {
+  invariant() {
     if (pos) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);

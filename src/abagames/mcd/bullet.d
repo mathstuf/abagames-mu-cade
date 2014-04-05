@@ -7,9 +7,9 @@ module abagames.mcd.bullet;
 
 private import std.math;
 private import std.string;
-private import opengl;
-private import bulletml;
-private import ode.ode;
+private import derelict.opengl3.gl;
+private import bml = bulletml.bulletml;
+private import derelict.ode.ode;
 private import abagames.util.actor;
 private import abagames.util.vector;
 private import abagames.util.rand;
@@ -52,7 +52,7 @@ public class BulletActor: Actor {
   ShapeGroup shape;
   LinePoint linePoint;
 
-  invariant {
+  invariant() {
     if (bullet && bullet.pos) {
       assert(bullet.pos.x <>= 0);
       assert(bullet.pos.y <>= 0);
@@ -74,7 +74,7 @@ public class BulletActor: Actor {
     linePoint.setSpectrumParams(1, 0.25f, 0.5f, 0.2f);
   }
 
-  public void set(BulletMLRunner* runner,
+  public void set(bml.BulletMLRunner runner,
                   float x, float y, float deg, float speed) {
     bullet.set(runner, x, y, deg, speed, 0);
     start();
@@ -121,9 +121,7 @@ public class BulletActor: Actor {
 
   public void rewind() {
     bullet.resetParser();
-    BulletMLRunner *runner = BulletMLRunner_new_parser(bullet.getParser());
-    BulletPool.registFunctions(runner);
-    bullet.setRunner(runner);
+    bullet.setRunner(bml.createRunner(bullet, bullet.getParser()));
   }
 
   public void remove() {
@@ -137,8 +135,8 @@ public class BulletActor: Actor {
 
   public override void move() {
     Vector tpos = bullet.target.getTargetPos();
-    Bullet.target.x = tpos.x;
-    Bullet.target.y = tpos.y;
+    Bullet.activeTarget.x = tpos.x;
+    Bullet.activeTarget.y = tpos.y;
     if (isAimTop) {
       float ox = tpos.x - bullet.pos.x;
       bullet.deg = (atan2(-ox, tpos.y - bullet.pos.y) * bullet.xReverse
@@ -184,7 +182,7 @@ public class BulletActor: Actor {
       removeForced();
   }
 
-  public void draw() {
+  public override void draw() {
   }
 
   public void slowdown() {
@@ -215,7 +213,7 @@ public class SimpleBullet: OdeActor {
   LinePoint linePoint;
   int cnt;
 
-  invariant {
+  invariant() {
     if (pos) {
       assert(pos.x <>= 0);
       assert(pos.y <>= 0);
@@ -296,7 +294,7 @@ public class SimpleBullet: OdeActor {
     }
   }
 
-  public override void collide(OdeActor actor, inout bool hasCollision, inout bool checkFeedback) {
+  public override void collide(OdeActor actor, ref bool hasCollision, ref bool checkFeedback) {
     hasCollision = checkFeedback = false;
     Enemy e = cast(Enemy) actor;
     if (cast(Ship) actor || cast(ShipTail) actor || (e && e.collideBullet)) {
@@ -351,7 +349,7 @@ public class SimpleBullet: OdeActor {
     shape.drawShadow(linePoint);
   }
 
-  public void draw() {
+  public override void draw() {
     if (removeCnt > 0)
       return;
     linePoint.draw();

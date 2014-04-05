@@ -15,7 +15,7 @@ private import abagames.mcd.gamemanager;
  */
 public class ReplayData {
  public:
-  static const char[] dir = "replay";
+  static const string dir = "replay";
   static const int VERSION_NUM = 10;
   InputRecord!(TwinStickPadState) twinStickPadInputRecord;
   long seed;
@@ -23,8 +23,8 @@ public class ReplayData {
   int time = 0;
  private:
 
-  public void save(char[] fileName) {
-    auto File fd = new File;
+  public void save(string fileName) {
+    scope File fd = new File;
     fd.create(dir ~ "/" ~ fileName);
     fd.write(VERSION_NUM);
     fd.write(seed);
@@ -34,8 +34,8 @@ public class ReplayData {
     fd.close();
   }
 
-  public void load(char[] fileName) {
-    auto File fd = new File;
+  public void load(string fileName) {
+    scope File fd = new File;
     fd.open(dir ~ "/" ~ fileName);
     int ver;
     fd.read(ver);
