@@ -32,9 +32,9 @@ target_link_libraries(mcd
     Derelict::sdl2
     Derelict::util)
 
-add_executable(mucade
+add_executable(mu-cade
     boot.d)
-target_link_libraries(mucade
+target_link_libraries(mu-cade
     mcd
     mcd_util
     mcd_util_bulletml
