@@ -1,0 +1,42 @@
+set(mcd_srcs
+    barrage.d
+    bullet.d
+    bulletimpl.d
+    bulletpool.d
+    bullettarget.d
+    enemy.d
+    field.d
+    gamemanager.d
+    letter.d
+    particle.d
+    prefmanager.d
+    replay.d
+    screen.d
+    shape.d
+    ship.d
+    shot.d
+    soundmanager.d
+    spec.d
+    stagemanager.d
+    title.d)
+
+add_library(mcd STATIC
+    ${mcd_srcs})
+target_link_libraries(mcd
+    mcd_util
+    mcd_util_bulletml
+    mcd_util_ode
+    mcd_util_sdl
+    Derelict::ode
+    Derelict::opengl3
+    Derelict::sdl2
+    Derelict::util)
+
+add_executable(mucade
+    boot.d)
+target_link_libraries(mucade
+    mcd
+    mcd_util
+    mcd_util_bulletml
+    mcd_util_ode
+    mcd_util_sdl)
