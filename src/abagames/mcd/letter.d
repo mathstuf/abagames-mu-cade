@@ -63,6 +63,12 @@ public class Letter {
   }
 
   private static void drawLetter(mat4 view, int n, float x, float y, float s, float d) {
+    mat4 model = mat4.identity;
+    model.rotate(-d / 180. * PI, vec3(0, 0, 1));
+    model.scale(s, s, s);
+    model.translate(x, y, 0);
+    // TODO: Set model.
+
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(s, s, s);
@@ -72,6 +78,12 @@ public class Letter {
   }
 
   private static void drawLetterRev(mat4 view, int n, float x, float y, float s, float d) {
+    mat4 model = mat4.identity;
+    model.rotate(-d / 180. * PI, vec3(0, 0, 1));
+    model.scale(s, -s, s);
+    model.translate(x, y, 0);
+    // TODO: Set model.
+
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(s, -s, s);
@@ -281,6 +293,11 @@ public class Letter {
   }
 
   private static void drawSegment(float x, float y, float width, float height, float deg) {
+    mat4 segmentmat = mat4.identity;
+    segmentmat.rotate(-deg / 180. * PI, vec3(0, 0, 1));
+    segmentmat.translate(x - width / 2, y, 0);
+    // TODO: Set the segment.
+
     glPushMatrix();
     glTranslatef(x - width / 2, y, 0);
     glRotatef(deg, 0, 0, 1);

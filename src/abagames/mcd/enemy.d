@@ -396,7 +396,7 @@ public class EnemyState {
  public:
   vec3 pos;
   float deg;
-  GLdouble rot[16];
+  mat4 rot;
   dReal[3] linearVel;
   dReal[3] angularVel;
   Nullable!vec3 sizeScale;
@@ -456,9 +456,7 @@ public class EnemyState {
   private void clearState() {
     pos.x = pos.y = pos.z = 0;
     deg = 0;
-    for (int i = 0; i < 16; i++)
-      rot[i] = 0;
-    rot[0] = rot[5] = rot[10] = rot[15] = 1;
+    rot = mat4.identity;
     for (int i = 0; i < 3; i++)
       linearVel[i] = angularVel[i] = 0;
     sizeScale.x = sizeScale.y = sizeScale.z = 1;
@@ -536,11 +534,16 @@ public class EnemySpec {
   public void collide(Enemy enemy, EnemyState state, OdeActor actor) nothrow {}
 
   public void recordLinePoints(EnemyState state, LinePoint lp) {
+    mat4 model = mat4.identity;
+    model.scale(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
+    model = model * state.rot;
+    model.translate(state.pos.x, state.pos.y, state.pos.z);
+
     glPushMatrix();
     Screen.glTranslate(state.pos);
-    glMultMatrixd(state.rot.ptr);
+    glMultMatrixf(state.rot.transposed.value_ptr);
     glScalef(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
-    lp.beginRecord();
+    lp.beginRecord(model);
     shape.recordLinePoints(lp);
     lp.endRecord();
     glPopMatrix();

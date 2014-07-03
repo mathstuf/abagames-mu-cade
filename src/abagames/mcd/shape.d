@@ -436,7 +436,7 @@ public class LinePoint {
     spectrumLength = length;
   }
 
-  public void beginRecord() {
+  public void beginRecord(mat4 model) {
     posIdx = 0;
     glGetFloatv(GL_MODELVIEW_MATRIX, m.ptr);
   }
@@ -602,10 +602,15 @@ public class LinePoint {
 }
 
 public interface Drawable {
+  public void setModelMatrix(mat4 model);
   public void draw(mat4 view);
 }
 
 public class EyeShape: Drawable {
+  public void setModelMatrix(mat4 model) {
+    // TODO: Implement.
+  }
+
   public void draw(mat4 view) {
     Screen.setColor(1.0f, 0, 0);
     glBegin(GL_LINE_LOOP);
@@ -637,6 +642,10 @@ public class EyeShape: Drawable {
 }
 
 public class CenterShape: Drawable {
+  public void setModelMatrix(mat4 model) {
+    // TODO: Implement.
+  }
+
   public void draw(mat4 view) {
     Screen.setColor(0.6f, 1.0f, 0.5f);
     glBegin(GL_TRIANGLE_FAN);

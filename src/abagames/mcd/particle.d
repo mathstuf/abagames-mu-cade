@@ -131,10 +131,14 @@ public class Particle: Actor {
   }
 
   private void recordLinePoints() {
+    mat4 model = mat4.identity;
+    model.rotate(-deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, pos.z);
+
     glPushMatrix();
     Screen.glTranslate(pos);
     glRotatef(deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    linePoint.beginRecord(model);
     linePoint.record(-1, 0, 0);
     linePoint.record( 1, 0, 0);
     linePoint.endRecord();
@@ -162,7 +166,7 @@ public class ConnectedParticle: Actor {
   Field field;
   vec3 _pos;
   vec3 _vel;
-  GLdouble rot[16];
+  mat4 rot;
   bool enableRotate;
   int cnt;
   float decayRatio;
@@ -241,9 +245,8 @@ public class ConnectedParticle: Actor {
     _exists = true;
   }
 
-  public void setRot(GLdouble[16] r) {
-    for (int i = 0; i < 16; i++)
-      rot[i] = r[i];
+  public void setRot(mat4 r) {
+    rot = r;
     enableRotate = true;
   }
 
@@ -283,11 +286,17 @@ public class ConnectedParticle: Actor {
   public void recordLinePoints() {
     if (!prevParticle || !prevParticle.exists)
       return;
+
+    mat4 model = mat4.identity;
+    if (enableRotate)
+      model = model * rot;
+    model.translate(_pos.x, _pos.y, _pos.z);
+
     glPushMatrix();
     Screen.glTranslate(_pos);
     if (enableRotate)
-      glMultMatrixd(rot.ptr);
-    linePoint.beginRecord();
+      glMultMatrixf(rot.transposed.value_ptr);
+    linePoint.beginRecord(model);
     linePoint.record(0, 0, 0);
     linePoint.record((prevParticle.pos.x - _pos.x) * 2,
                      (prevParticle.pos.y - _pos.y) * 2,
@@ -301,6 +310,11 @@ public class ConnectedParticle: Actor {
       return;
     linePoint.drawSpectrum(view);
     linePoint.drawWithSpectrumColor(view);
+
+    mat4 model = mat4.identity;
+    model.translate(_pos.x, _pos.y, _pos.z);
+    // TODO: Set model.
+
     glPushMatrix();
     Screen.glTranslate(_pos);
     Screen.setColor(r, g, b);
@@ -451,10 +465,14 @@ public class TailParticle: Actor {
   }
 
   private void recordLinePoints() {
+    mat4 model = mat4.identity;
+    model.rotate(-deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, pos.z);
+
     glPushMatrix();
     Screen.glTranslate(pos);
     glRotatef(deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
     glPopMatrix();
