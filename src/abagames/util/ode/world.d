@@ -19,7 +19,7 @@ public class World {
   static dJointFeedback[] jointFeedback;
   static int jointFeedbackIdx;
  private:
-  const int MAX_CONTACTS = 4;
+  static const int MAX_CONTACTS = 4;
   static const int CONTACT_JOINT_GROUP_NUM = 1000;
   static const int CONTACT_JOINT_FEEDBACK_NUM = 100;
   static const dReal CONTACT_MAX_CORRECTING_VEL = 2.5;

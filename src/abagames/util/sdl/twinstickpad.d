@@ -26,7 +26,7 @@ public class TwinStickPad: Input {
   Uint8 *keys;
  private:
   SDL_Joystick *stick = null;
-  const int JOYSTICK_AXIS_MAX = 32768;
+  static const int JOYSTICK_AXIS_MAX = 32768;
   TwinStickPadState state;
 
   public this() {

@@ -14,7 +14,7 @@ private import abagames.mcd.field;
  */
 public class Screen: Screen3D {
  private:
-  const string CAPTION = "Mu-cade";
+  static const string CAPTION = "Mu-cade";
   Field field;
 
   protected override void init() {

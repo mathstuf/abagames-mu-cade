@@ -24,8 +24,8 @@ public class Bullet: bml.BulletManager {
  private:
   static Rand randSource;
   static BulletsManager manager;
-  const float VEL_SS_SDM_RATIO = 62.0 / 10;
-  const float VEL_SDM_SS_RATIO = 10.0 / 62;
+  static const float VEL_SS_SDM_RATIO = 62.0 / 10;
+  static const float VEL_SDM_SS_RATIO = 10.0 / 62;
   bml.BulletMLRunner runner;
   float _rank;
 
