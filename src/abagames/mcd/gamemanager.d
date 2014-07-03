@@ -266,7 +266,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   private void handleEscKey() {
-    if (pad.keys[SDLK_ESCAPE] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_ESCAPE] == SDL_PRESSED) {
       if (!escPressed) {
         escPressed = true;
         if (state == GameState.IN_GAME)
@@ -280,7 +280,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   private void handlePauseKey() {
-    if (pad.keys[SDLK_p] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_P] == SDL_PRESSED) {
       if (!pPressed) {
         pPressed = true;
         paused = !paused;
