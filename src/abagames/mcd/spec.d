@@ -447,6 +447,7 @@ public class CentHeadToAndFrom: CentHead {
     _colorR = COLOR_R;
     _colorG = COLOR_G;
     _colorB = COLOR_B;
+    ready();
   }
 
   public override void initState(Enemy enemy, EnemyState state) {
@@ -543,6 +544,7 @@ public class CentHeadChase: CentHead {
     _colorR = COLOR_R;
     _colorG = COLOR_G;
     _colorB = COLOR_B;
+    ready();
   }
 
   public override void initState(Enemy enemy, EnemyState state) {
@@ -641,6 +643,7 @@ public class CentHeadRoll: CentHead {
     _colorR = COLOR_R;
     _colorG = COLOR_G;
     _colorB = COLOR_B;
+    ready();
   }
 
   public override void initState(Enemy enemy, EnemyState state) {
@@ -661,8 +664,9 @@ public class CentHead: EnemySpec, JointedEnemySpec, ConnectedParticlesBodyAddabl
   CentBarrage headBarrage, bodyBarrage;
  private:
 
+  bool _ready;
   invariant() {
-    if (!sizeScale.isNull) {
+    if (_ready && !sizeScale.isNull) {
       assert(sizeScale.x > 0);
       assert(sizeScale.y > 0);
       assert(sizeScale.z > 0);
@@ -680,6 +684,11 @@ public class CentHead: EnemySpec, JointedEnemySpec, ConnectedParticlesBodyAddabl
     shape = new ShapeGroup;
     shape.addShape(new Square(world, MASS, 0, 0, SIZE * WIDTH, SIZE));
     subShape = new EyeShape;
+    _ready = false;
+  }
+
+  protected void ready() {
+    _ready = true;
   }
 
   public override void initState(Enemy enemy, EnemyState state) {
