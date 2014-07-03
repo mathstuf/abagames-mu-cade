@@ -8,8 +8,8 @@ module abagames.util.ode.odeactor;
 private import std.math;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
+private import gl3n.linalg;
 private import abagames.util.actor;
-private import abagames.util.vector;
 private import abagames.util.ode.world;
 
 /**
@@ -22,8 +22,8 @@ public class OdeActor: Actor {
   struct ContactJoint {
     dJointID jointID;
     int bodyIdx;
-    Vector3 pos;
-    Vector3 feedbackForce;
+    vec3 pos;
+    vec3 feedbackForce;
   };
   World world;
   dBodyID _bodyId;
@@ -35,14 +35,14 @@ public class OdeActor: Actor {
   int contactJointNum = 0;
   bool bodyCreated;
  private:
-  static Vector3 vvct, force;
+  static vec3 vvct, force;
   static const float VELOCITY_DECAY_RATIO = 0.1f;
   static const int GEOM_NUM = 8;
   static const int CONTACT_JOINT_NUM = 16;
 
   public static void initFirst() {
-    vvct = new Vector3;
-    force = new Vector3;
+    vvct = vec3(0);
+    force = vec3(0);
   }
 
   public void setWorld(World world) {
@@ -55,8 +55,8 @@ public class OdeActor: Actor {
     if (checkFeedback) {
       contactJoint = new ContactJoint[CONTACT_JOINT_NUM];
       foreach (ref ContactJoint cj; contactJoint) {
-        cj.pos = new Vector3;
-        cj.feedbackForce = new Vector3;
+        cj.pos = vec3(0);
+        cj.feedbackForce = vec3(0);
       }
     }
     bodyCreated = false;
@@ -148,7 +148,7 @@ public class OdeActor: Actor {
     dBodyAddForce(_bodyId, tx, ty, tz);
   }
 
-  public Vector3 getForce() {
+  public vec3 getForce() {
     dReal* f = dBodyGetForce(_bodyId);
     force.x = f[0];
     force.y = f[1];
@@ -209,7 +209,7 @@ public class OdeActor: Actor {
     vvct.x = vm[0];
     vvct.y = vm[1];
     vvct.z = vm[2];
-    float vs = vvct.vctSize;
+    float vs = vvct.magnitude;
     if (vs > max) {
       float p = 1 + (max / vs - 1) * ratio;
       vvct *= p;
@@ -231,7 +231,7 @@ public class OdeActor: Actor {
     vvct.x = vm[0];
     vvct.y = vm[1];
     vvct.z = vm[2];
-    float vs = vvct.vctSize;
+    float vs = vvct.magnitude;
     if (vs > max) {
       float p = 1 + (max / vs - 1) * ratio;
       vvct *= p;
@@ -334,8 +334,8 @@ public class OdeActor: Actor {
   protected void getFeedbackForce() {
     for (int i = 0; i < contactJointNum; i++) {
       dJointFeedback* fb = dJointGetFeedback(contactJoint[i].jointID);
-      Vector3 ff = contactJoint[i].feedbackForce;
-      ff.clear();
+      vec3 ff = contactJoint[i].feedbackForce;
+      ff.clear(0);
       if (contactJoint[i].bodyIdx == 1) {
         ff.x = fb.f1[0];
         ff.y = fb.f1[1];

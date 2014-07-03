@@ -10,8 +10,8 @@ private import std.string;
 private import derelict.opengl3.gl;
 private import bml = bulletml.bulletml;
 private import derelict.ode.ode;
+private import gl3n.linalg;
 private import abagames.util.actor;
-private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.bulletml.bullet;
 private import abagames.util.ode.world;
@@ -134,7 +134,7 @@ public class BulletActor: Actor {
   }
 
   public override void move() {
-    Vector tpos = bullet.target.getTargetPos();
+    vec2 tpos = bullet.target.getTargetPos();
     Bullet.activeTarget.x = tpos.x;
     Bullet.activeTarget.y = tpos.y;
     if (isAimTop) {
@@ -204,8 +204,8 @@ public class SimpleBullet: OdeActor {
   Ship ship;
   GameManager gameManager;
   ParticlePool particles;
-  Vector pos;
-  Vector firstForce;
+  vec2 pos;
+  vec2 firstForce;
   float deg;
   float speed;
   int removeCnt;
@@ -236,10 +236,10 @@ public class SimpleBullet: OdeActor {
     ship = cast(Ship) args[1];
     gameManager = cast(GameManager) args[2];
     particles = cast(ParticlePool) args[3];
-    pos = new Vector;
+    pos = vec2(0);
     deg = 0;
     speed = 1;
-    firstForce = new Vector;
+    firstForce = vec2(0);
     shape = new ShapeGroup;
     shape.addShape(new Square(world, MASS, 0, 0, SIZE * 0.5f, SIZE));
     linePoint = new LinePoint(field);

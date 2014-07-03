@@ -8,7 +8,7 @@ module abagames.mcd.field;
 private import std.math;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
-private import abagames.util.vector;
+private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.rand;
 private import abagames.util.sdl.texture;
@@ -19,32 +19,6 @@ private import abagames.mcd.shape;
 private import abagames.mcd.particle;
 private import abagames.mcd.ship;
 private import abagames.mcd.gamemanager;
-
-private static float mag(float x, float y, float z) {
-  return sqrt(x * x + y * y + z * z);
-}
-
-private static void normalize(ref float x, ref float y, ref float z) {
-  float d = mag(x, y, z);
-  x /= d;
-  y /= d;
-  z /= d;
-}
-
-private static float dot2(
-    float x1, float y1,
-    float x2, float y2) {
-  return x1 * x2 - y1 * y2;
-}
-
-private static void cross(
-    ref float x, ref float y, ref float z,
-    float x1, float y1, float z1,
-    float x2, float y2, float z2) {
-  x = dot2(y1, z1, z2, y2);
-  y = dot2(z1, x1, x2, z2);
-  z = dot2(x1, y1, y2, x2);
-}
 
 /**
  * Game field (floor, stars and overlay).
@@ -61,8 +35,8 @@ public class Field {
   GameManager gameManager;
   Ship ship;
   StarParticlePool starParticles;
-  Vector _size;
-  Vector eyePos, eyePosSize;
+  vec2 _size;
+  vec2 eyePos, eyePosSize;
   Wall floorWall;
   Texture _titleTexture;
   int cnt;
@@ -86,9 +60,9 @@ public class Field {
     this.screen = screen;
     this.world = world;
     this.gameManager = gameManager;
-    _size = new Vector(20, 15);
-    eyePos = new Vector;
-    eyePosSize = new Vector(_size.x - 12, size.y - 9);
+    _size = vec2(20, 15);
+    eyePos = vec2(0);
+    eyePosSize = vec2(_size.x - 12, size.y - 9);
     _titleTexture = new Texture("title.bmp", 0, 0, 5, 1, 64, 64, 4278190080u);
     floorWall = new FloorWall;
     floorWall.setWorld(world);
@@ -161,30 +135,12 @@ public class Field {
   private void lookAt(float ex, float ey, float ez,
                       float lx, float ly, float lz,
                       float ux, float uy, float uz) {
-    float fx, fy, fz;
-    fx = lx - ex;
-    fy = ly - ey;
-    fz = lz - ez;
-    normalize(fx, fy, fz);
-    float sx, sy, sz;
-    cross(sx, sy, sz,
-          fx, fy, fz,
-          ux, uy, uz);
-    normalize(sx, sy, sz);
-    float vx, vy, vz;
-    cross(vx, vy, vz,
-          sx, sy, sz,
-          fx, fy, fz);
-    normalize(vx, vy, vz);
-    float[] matrix = [
-      sx, vx, -fx, 0.,
-      sy, vy, -fy, 0.,
-      sz, vz, -fz, 0.,
-      0., 0., 0., 1.];
+    mat4 mat = mat4.look_at(vec3(ex, ey, ez),
+                            vec3(lx, ly, lz),
+                            vec3(ux, uy, uz));
+    mat.transpose();
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(matrix.ptr);
-    glTranslatef(-ex, -ey, -ez);
+    glMultMatrixf(mat.value_ptr);
   }
 
   public void setLookAt() {
@@ -336,7 +292,7 @@ public class Field {
     glPopMatrix();
   }
 
-  public bool checkInField(Vector p) {
+  public bool checkInField(vec2 p) {
     return _size.contains(p);
   }
 
@@ -344,11 +300,11 @@ public class Field {
     return _size.contains(x, y);
   }
 
-  public bool checkInField(Vector3 p) {
+  public bool checkInField(vec3 p) {
     return (_size.contains(p.x, p.y) && fabs(p.z) < 1);
   }
 
-  public const(Vector) size() const {
+  public const(vec2) size() const {
     return _size;
   }
 

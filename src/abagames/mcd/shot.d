@@ -9,8 +9,8 @@ private import std.math;
 private import std.string;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
+private import gl3n.linalg;
 private import abagames.util.actor;
-private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.math;
 private import abagames.util.ode.world;
@@ -30,7 +30,7 @@ public template ShotImpl() {
  protected:
   Field field;
   ParticlePool particles;
-  Vector pos;
+  vec2 pos;
   int cnt;
   int removeCnt;
   float _deg;
@@ -46,7 +46,7 @@ public template ShotImpl() {
     assert(cnt >= 0);
   }
 
-  public void set(Vector3 p, float d) {
+  public void set(vec3 p, float d) {
     super.set();
     pos.x = p.x - sin(d) * 0.5f;
     pos.y = p.y + cos(d) * 0.5f;
@@ -146,7 +146,7 @@ public class Shot: OdeActor {
     super.init();
     field = cast(Field) args[0];
     particles = cast(ParticlePool) args[1];
-    pos = new Vector;
+    pos = vec2(0);
     _deg = 0;
     cnt = 0;
     shape = new ShapeGroup;
@@ -183,7 +183,7 @@ public class EnhancedShot: OdeActor {
     super.init();
     field = cast(Field) args[0];
     particles = cast(ParticlePool) args[1];
-    pos = new Vector;
+    pos = vec2(0);
     _deg = 0;
     cnt = 0;
     shape = new ShapeGroup;

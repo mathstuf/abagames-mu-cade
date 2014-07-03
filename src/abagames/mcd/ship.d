@@ -6,9 +6,10 @@
 module abagames.mcd.ship;
 
 private import std.math;
+private import std.typecons;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
-private import abagames.util.vector;
+private import gl3n.linalg;
 private import abagames.util.rand;
 private import abagames.util.math;
 private import abagames.util.sdl.twinstickpad;
@@ -56,9 +57,9 @@ public class Ship: OdeActor, BulletTarget {
   GameManager gameManager;
   BulletPool bullets;
   EnhancedShotPool enhancedShots;
-  Vector3 _pos;
-  Vector trgPos;
-  Vector slideVel;
+  vec3 _pos;
+  vec2 trgPos;
+  vec2 slideVel;
   ShotPool shots;
   float deg;
   float trgDeg;
@@ -110,9 +111,9 @@ public class Ship: OdeActor, BulletTarget {
     this.particles = particles;
     this.connectedParticles = connectedParticles;
     this.gameManager = gameManager;
-    _pos = new Vector3;
-    trgPos = new Vector;
-    slideVel = new Vector;
+    _pos = vec3(0);
+    trgPos = vec3(0);
+    slideVel = vec3(0);
     deg = 0;
     trgDeg = 0;
     Object[] sargs;
@@ -231,8 +232,8 @@ public class Ship: OdeActor, BulletTarget {
       input.clear();
     slideVel.x = input.left.x;
     slideVel.y = input.left.y;
-    if (slideVel.vctSize > 1)
-      slideVel /= slideVel.vctSize;
+    if (slideVel.magnitude > 1)
+      slideVel *= 1. / slideVel.magnitude;
     slideVel *= SLIDE_FORCE_BASE;
     addForce(slideVel.x, slideVel.y);
     deg = getDeg();
@@ -405,7 +406,7 @@ public class Ship: OdeActor, BulletTarget {
     restartCnt = RESTART_CNT;
   }
 
-  public void addConnectedParticles(Vector3 p, float deg, float speed = 1) {
+  public void addConnectedParticles(vec3 p, float deg, float speed = 1) {
     ConnectedParticle[] cps = connectedParticles.getMultipleInstances(9);
     if (!cps)
       return;
@@ -479,11 +480,11 @@ public class Ship: OdeActor, BulletTarget {
     glPopMatrix();
   }
 
-  public Vector3 pos() {
+  public vec3 pos() {
     return _pos;
   }
 
-  public Vector getTargetPos() {
+  public vec2 getTargetPos() {
     trgPos.x = _pos.x;
     trgPos.y = _pos.y;
     return trgPos;
@@ -512,10 +513,10 @@ public class ShipTail: OdeActor {
   static const float SIZE = 1.0f;
   static const float MASS = 0.1f;
   static Rand rand;
-  Vector3 _pos;
+  vec3 _pos;
   float deg;
   GLdouble rot[16];
-  Vector3 size;
+  vec3 size;
   Field field;
   Ship ship;
   ParticlePool particles;
@@ -552,8 +553,8 @@ public class ShipTail: OdeActor {
     this.ship = ship;
     this.particles = particles;
     this.connectedParticles = connectedParticles;
-    _pos = new Vector3;
-    size = new Vector3;
+    _pos = vec3(0);
+    size = vec3(0);
     deg = 0;
     shape = new Square(world, MASS, 0, 0, SIZE * WIDTH, SIZE);
     linePoint = new LinePoint(field);
@@ -569,9 +570,9 @@ public class ShipTail: OdeActor {
   private void initMassAndGeom() {
     super.set();
     dMassSetZero(&m);
-    shape.addMass(&m, size);
+    shape.addMass(&m, Nullable!vec3(size));
     setMass(m);
-    shape.addGeom(this, world.space, size);
+    shape.addGeom(this, world.space, Nullable!vec3(size));
   }
 
   public void set(float x, float y, float z, float deg, float sz, dBodyID jointedBodyId) {
@@ -659,7 +660,7 @@ public class ShipTail: OdeActor {
     linePoint.draw();
   }
 
-  public Vector3 pos() {
+  public vec3 pos() {
     return _pos;
   }
 }

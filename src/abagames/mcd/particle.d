@@ -7,8 +7,8 @@ module abagames.mcd.particle;
 
 private import std.math;
 private import derelict.opengl3.gl;
+private import gl3n.linalg;
 private import abagames.util.actor;
-private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.math;
 private import abagames.mcd.shape;
@@ -24,10 +24,10 @@ public class Particle: Actor {
  private:
   static Rand rand;
   Field field;
-  Vector3 pos;
-  Vector3 vel;
+  vec3 pos;
+  vec3 vel;
   float size;
-  Vector3 size3;
+  vec3 size3;
   float deg;
   float md;
   int cnt;
@@ -62,23 +62,23 @@ public class Particle: Actor {
 
   public override void init(Object[] args) {
     field = cast(Field) args[0];
-    pos = new Vector3;
-    vel = new Vector3;
+    pos = vec3(0);
+    vel = vec3(0);
     size = 1;
-    size3 = new Vector3;
+    size3 = vec3(0);
     linePoint = new LinePoint(field);
-    linePoint.setPos(new Vector3(0, 0, 0));
+    linePoint.setPos(vec3(0, 0, 0));
     deg = md = 0;
     r = g = b = 0;
   }
 
-  public void set(Vector p,
+  public void set(vec2 p,
                   float vx, float vy, float sz, float r, float g, float b,
                   int c = 60) nothrow {
     set(p.x, p.y, 0, vx, vy, 0, sz, r, g, b, c);
   }
 
-  public void set(Vector3 p,
+  public void set(vec3 p,
                   float vx, float vy, float sz, float r, float g, float b,
                   int c = 60) nothrow {
     set(p.x, p.y, p.z, vx, vy, 0, sz, r, g, b, c);
@@ -160,8 +160,8 @@ public class ConnectedParticle: Actor {
   static const float SPRING_CONSTANT = 0.04f;
   static Rand rand;
   Field field;
-  Vector3 _pos;
-  Vector3 _vel;
+  vec3 _pos;
+  vec3 _vel;
   GLdouble rot[16];
   bool enableRotate;
   int cnt;
@@ -201,11 +201,11 @@ public class ConnectedParticle: Actor {
 
   public override void init(Object[] args) {
     field = cast(Field) args[0];
-    _pos = new Vector3;
-    _vel = new Vector3;
+    _pos = vec3(0);
+    _vel = vec3(0);
     linePoint = new LinePoint(field);
-    linePoint.setPos(new Vector3(0, 0, 0));
-    linePoint.setSize(new Vector3(1, 1, 1));
+    linePoint.setPos(vec3(0, 0, 0));
+    linePoint.setSize(vec3(1, 1, 1));
     r = g = b = 0;
     baseLength = 0;
   }
@@ -263,7 +263,7 @@ public class ConnectedParticle: Actor {
     this.b *= decayRatio;
     linePoint.setSpectrumParams(r, g, b, 1);
     if (prevParticle && prevParticle.exists) {
-      float ds = pos.dist(prevParticle.pos);
+      float ds = pos.fastdist(prevParticle.pos);
       float lo = ds - baseLength;
       if (lo > 0.01f && ds > 0.01f) {
         float d = atan2(prevParticle.pos.x - pos.x, prevParticle.pos.y - pos.y);
@@ -313,11 +313,11 @@ public class ConnectedParticle: Actor {
     glPopMatrix();
   }
 
-  public Vector3 pos() {
+  public vec3 pos() {
     return _pos;
   }
 
-  public Vector3 vel() {
+  public vec3 vel() {
     return _vel;
   }
 }
@@ -343,14 +343,14 @@ public class TailParticle: Actor {
  private:
   static const float SIZE = 1;
   static Rand rand;
-  static Vector3 trgPos;
+  static vec3 trgPos;
   static float trgDeg;
   Field field;
   Ship ship;
-  Vector3 pos;
-  Vector3 vel;
+  vec3 pos;
+  vec3 vel;
   float size;
-  Vector3 size3;
+  vec3 size3;
   float deg;
   float md;
   int cnt;
@@ -382,7 +382,7 @@ public class TailParticle: Actor {
     rand.setSeed(seed);
   }
 
-  public static void setTarget(Vector3 p, float d) {
+  public static void setTarget(vec3 p, float d) {
     trgPos = p;
     trgDeg = d;
   }
@@ -390,11 +390,11 @@ public class TailParticle: Actor {
   public override void init(Object[] args) {
     field = cast(Field) args[0];
     ship = cast(Ship) args[1];
-    pos = new Vector3;
-    vel = new Vector3;
+    pos = vec3(0);
+    vel = vec3(0);
     deg = 0;
     size = 1;
-    size3 = new Vector3;
+    size3 = vec3(0);
     shape = new ShapeGroup;
     shape.addShape(new Square(null, 0, 0, 0, SIZE * ShipTail.WIDTH, SIZE));
     linePoint = new LinePoint(field);
@@ -478,8 +478,8 @@ public class TailParticlePool: ActorPool!(TailParticle) {
 public class StarParticle: Actor {
  private:
   Field field;
-  Vector3 pos;
-  Vector3 vel;
+  vec3 pos;
+  vec3 vel;
   float size;
   int cnt;
 
@@ -497,8 +497,8 @@ public class StarParticle: Actor {
 
   public override void init(Object[] args) {
     field = cast(Field) args[0];
-    pos = new Vector3;
-    vel = new Vector3;
+    pos = vec3(0);
+    vel = vec3(0);
     size = 1;
   }
 
@@ -536,8 +536,8 @@ public class StarParticlePool: ActorPool!(StarParticle) {
  */
 public class NumIndicator: Actor {
  private:
-  Vector pos;
-  Vector vel;
+  vec2 pos;
+  vec2 vel;
   float size, trgSize;
   int cnt;
   int num1, num2;
@@ -553,8 +553,8 @@ public class NumIndicator: Actor {
   }
 
   public override void init(Object[] args) {
-    pos = new Vector;
-    vel = new Vector;
+    pos = vec2(0);
+    vel = vec2(0);
     size = 1;
     num1 = 0;
     num2 = -1;

@@ -7,8 +7,8 @@ module abagames.mcd.bulletimpl;
 
 private import std.math;
 private import bml = bulletml.bulletml;
+private import gl3n.linalg;
 private import abagames.util.bulletml.bullet;
-private import abagames.util.vector;
 private import abagames.mcd.bullet;
 private import abagames.mcd.bullettarget;
 
@@ -30,8 +30,8 @@ public class BulletImpl: Bullet {
   }
 
   public override double getAimDirection() {
-    Vector b = pos;
-    Vector t = activeTarget;
+    vec2 b = pos;
+    vec2 t = activeTarget;
     float xrev = xReverse;
     float yrev = yReverse;
     float ox = t.x - b.x;

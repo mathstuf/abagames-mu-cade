@@ -6,9 +6,10 @@
 module abagames.mcd.spec;
 
 private import std.math;
+private import std.typecons;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
-private import abagames.util.vector;
+private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.ode.odeactor;
 private import abagames.util.ode.world;
@@ -314,7 +315,7 @@ public template CentHeadInitImpl() {
       assert(0);
     }
     baseSize = size;
-    sizeScale = new Vector3(ss, ss, 1);
+    sizeScale = vec3(ss, ss, 1);
     massScale = ss * ss;
   }
 
@@ -653,7 +654,7 @@ public class CentHead: EnemySpec, JointedEnemySpec, ConnectedParticlesBodyAddabl
   mixin CentMoveImpl;
  protected:
   EnemySpec bodySpec;
-  Vector3 sizeScale;
+  Nullable!vec3 sizeScale;
   float massScale;
   float forwardForceScale;
   float slowVelocityRatio;
@@ -661,7 +662,7 @@ public class CentHead: EnemySpec, JointedEnemySpec, ConnectedParticlesBodyAddabl
  private:
 
   invariant() {
-    if (sizeScale) {
+    if (!sizeScale.isNull) {
       assert(sizeScale.x > 0);
       assert(sizeScale.y > 0);
       assert(sizeScale.z > 0);

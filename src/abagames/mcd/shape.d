@@ -5,9 +5,11 @@
  */
 module abagames.mcd.shape;
 
+private import std.typecons;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
-private import abagames.util.vector;
+private import gl3n.linalg;
+private import abagames.util.math;
 private import abagames.util.sdl.displaylist;
 private import abagames.util.ode.odeactor;
 private import abagames.util.ode.world;
@@ -19,8 +21,8 @@ private import abagames.mcd.field;
  * Handling mass and geom of a object.
  */
 public interface Shape {
-  public void addMass(dMass* m, Vector3 sizeScale = null, float massScale = 1);
-  public void addGeom(OdeActor oa, dSpaceID sid, Vector3 sizeScale = null);
+  public void addMass(dMass* m, Nullable!vec3 sizeScale = Nullable!vec3(), float massScale = 1);
+  public void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3());
   public void recordLinePoints(LinePoint lp);
   public void drawShadow(LinePoint lp);
 }
@@ -33,23 +35,23 @@ public class ShapeGroup: Shape {
     shapes ~= s;
   }
 
-  public void setMass(OdeActor oa, Vector3 sizeScale = null, float massScale = 1) {
+  public void setMass(OdeActor oa, Nullable!vec3 sizeScale = Nullable!vec3(), float massScale = 1) {
     dMass m;
     dMassSetZero(&m);
     addMass(&m, sizeScale, massScale);
     oa.setMass(m);
   }
 
-  public void setGeom(OdeActor oa, dSpaceID sid, Vector3 sizeScale = null) {
+  public void setGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
     addGeom(oa, sid, sizeScale);
   }
 
-  public void addMass(dMass *m, Vector3 sizeScale = null, float massScale = 1) {
+  public void addMass(dMass *m, Nullable!vec3 sizeScale = Nullable!vec3(), float massScale = 1) {
     foreach (Shape s; shapes)
       s.addMass(m, sizeScale, massScale);
   }
 
-  public void addGeom(OdeActor oa, dSpaceID sid, Vector3 sizeScale = null) {
+  public void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
     foreach (Shape s; shapes)
       s.addGeom(oa, sid, sizeScale);
   }
@@ -69,8 +71,8 @@ public class ShapeGroup: Shape {
 public abstract class ShapeBase: Shape {
  protected:
   World world;
-  Vector3 pos;
-  Vector3 size;
+  vec3 pos;
+  vec3 size;
   float mass = 1;
   float shapeBoxScale = 1;
 
@@ -86,9 +88,9 @@ public abstract class ShapeBase: Shape {
     }
   }
 
-  public void addMass(dMass* m, Vector3 sizeScale = null, float massScale = 1) {
+  public void addMass(dMass* m, Nullable!vec3 sizeScale = Nullable!vec3(), float massScale = 1) {
     dMass sm;
-    if (sizeScale) {
+    if (!sizeScale.isNull) {
       dMassSetBox(&sm, 1, size.x * sizeScale.x, size.y * sizeScale.y, size.z * sizeScale.z);
       dMassTranslate(&sm, pos.x * sizeScale.x, pos.y * sizeScale.y, pos.z * sizeScale.z);
     } else {
@@ -99,10 +101,10 @@ public abstract class ShapeBase: Shape {
     dMassAdd(m, &sm);
   }
 
-  public void addGeom(OdeActor oa, dSpaceID sid, Vector3 sizeScale = null) {
+  public void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
     if (pos.x == 0 && pos.y == 0 && pos.z == 0) {
       dGeomID bg;
-      if (sizeScale) {
+      if (!sizeScale.isNull) {
         bg = dCreateBox(sid,
                         size.x * sizeScale.x * shapeBoxScale,
                         size.y * sizeScale.y * shapeBoxScale,
@@ -117,7 +119,7 @@ public abstract class ShapeBase: Shape {
     } else {
       dGeomID tg = dCreateGeomTransform(sid);
       dGeomID bg;
-      if (sizeScale) {
+      if (!sizeScale.isNull) {
         bg = dCreateBox(cast(dSpaceID) 0,
                         size.x * sizeScale.x * shapeBoxScale,
                         size.y * sizeScale.y * shapeBoxScale,
@@ -146,16 +148,16 @@ public class Square: ShapeBase {
   public this(World world, float mass, float px, float py, float sx, float sy) {
     this.world = world;
     this.mass = mass;
-    pos = new Vector3(px, py, 0);
-    size = new Vector3(sx, sy, 1);
+    pos = vec3(px, py, 0);
+    size = vec3(sx, sy, 1);
   }
 
   public this(World world, float mass, float px, float py, float pz,
               float sx, float sy, float sz) {
     this.world = world;
     this.mass = mass;
-    pos = new Vector3(px, py, pz);
-    size = new Vector3(sx, sy, sz);
+    pos = vec3(px, py, pz);
+    size = vec3(sx, sy, sz);
   }
 
   public override void recordLinePoints(LinePoint lp) {
@@ -191,14 +193,14 @@ public class Sphere: ShapeBase {
   public this(World world, float mass, float px, float py, float rad) {
     this.world = world;
     this.mass = mass;
-    pos = new Vector3(px, py, 0);
-    size = new Vector3(rad, rad, rad);
+    pos = vec3(px, py, 0);
+    size = vec3(rad, rad, rad);
   }
 
-  public override void addGeom(OdeActor oa, dSpaceID sid, Vector3 sizeScale = null) {
+  public override void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
     if (pos.x == 0 && pos.y == 0 && pos.z == 0) {
       dGeomID bg;
-      if (sizeScale) {
+      if (!sizeScale.isNull) {
         bg = dCreateSphere(sid,
                            size.x * sizeScale.x * shapeBoxScale);
       } else {
@@ -209,7 +211,7 @@ public class Sphere: ShapeBase {
     } else {
       dGeomID tg = dCreateGeomTransform(sid);
       dGeomID bg;
-      if (sizeScale) {
+      if (!sizeScale.isNull) {
         bg = dCreateSphere(cast(dSpaceID) 0,
                            size.x * sizeScale.x * shapeBoxScale);
         dGeomSetPosition(bg, pos.x * sizeScale.x, pos.y * sizeScale.y, pos.z * sizeScale.z);
@@ -257,8 +259,8 @@ public class Triangle: ShapeBase {
   public this(World world, float mass, float px, float py, float sx, float sy) {
     this.world = world;
     this.mass = mass;
-    pos = new Vector3(px, py, 0);
-    size = new Vector3(sx, sy, 1);
+    pos = vec3(px, py, 0);
+    size = vec3(sx, sy, 1);
     shapeBoxScale = 1;
   }
 
@@ -292,8 +294,8 @@ public class Box: ShapeBase {
   public this(World world, float mass, float px, float py, float pz, float sx, float sy, float sz) {
     this.world = world;
     this.mass = mass;
-    pos = new Vector3(px, py, pz);
-    size = new Vector3(sx, sy, sz);
+    pos = vec3(px, py, pz);
+    size = vec3(sx, sy, sz);
   }
 
   public override void recordLinePoints(LinePoint lp) {
@@ -370,10 +372,10 @@ public class LinePoint {
  private:
   static const int HISTORY_MAX = 40;
   Field field;
-  Vector3[] pos;
-  Vector3[][] posHist;
+  vec3[] pos;
+  vec3[][] posHist;
   int posIdx, histIdx;
-  Vector3 basePos, baseSize;
+  vec3 basePos, baseSize;
   GLfloat[16] m;
   bool isFirstRecord;
   float spectrumColorR, spectrumColorG, spectrumColorB;
@@ -404,15 +406,15 @@ public class LinePoint {
 
   public this(Field field, int pointMax = 8) {
     init();
-    pos = new Vector3[pointMax];
-    posHist = new Vector3[][HISTORY_MAX];
+    pos = new vec3[pointMax];
+    posHist = new vec3[][HISTORY_MAX];
     this.field = field;
-    foreach (ref Vector3 p; pos)
-        p = new Vector3;
-    foreach (ref Vector3[] pp; posHist) {
-      pp = new Vector3[pointMax];
-      foreach (ref Vector3 p; pp)
-        p = new Vector3;
+    foreach (ref vec3 p; pos)
+        p = vec3(0);
+    foreach (ref vec3[] pp; posHist) {
+      pp = new vec3[pointMax];
+      foreach (ref vec3 p; pp)
+        p = vec3(0);
     }
     spectrumColorRTrg = spectrumColorGTrg = spectrumColorBTrg = 0;
     spectrumLength = 0;
@@ -439,11 +441,11 @@ public class LinePoint {
     glGetFloatv(GL_MODELVIEW_MATRIX, m.ptr);
   }
 
-  public void setPos(Vector3 p) {
+  public void setPos(vec3 p) {
     basePos = p;
   }
 
-  public void setSize(Vector3 s) nothrow {
+  public void setSize(vec3 s) nothrow {
     baseSize = s;
   }
 
@@ -572,7 +574,7 @@ public class LinePoint {
         nhif += HISTORY_MAX;
       int hi = cast(int) hif;
       int nhi = cast(int) nhif;
-      if (posHist[hi][0].dist(posHist[nhi][0]) < 8) {
+      if (posHist[hi][0].fastdist(posHist[nhi][0]) < 8) {
         for (int i = 0; i < posIdx; i += 2) {
           glVertex3f(posHist[hi][i].x, posHist[hi][i].y, posHist[hi][i].z);
           glVertex3f(posHist[hi][i+1].x, posHist[hi][i+1].y, posHist[hi][i+1].z);

@@ -10,10 +10,10 @@ private import std.string;
 private import std.stream;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
+private import gl3n.linalg;
 private import abagames.util.tokenizer;
 private import abagames.util.iterator;
 private import abagames.util.rand;
-private import abagames.util.vector;
 private import abagames.util.ode.world;
 private import abagames.mcd.field;
 private import abagames.mcd.ship;
@@ -268,7 +268,7 @@ public class Appearance {
   World world;
   StageManager stageManager;
   EnemySpec spec;
-  Vector blockAppPos;
+  vec2 blockAppPos;
   float cnt;
   int num;
   int interval;
@@ -281,7 +281,7 @@ public class Appearance {
     this.bullets = bullets;
     this.world = world;
     this.stageManager = stageManager;
-    blockAppPos = new Vector;
+    blockAppPos = vec2(0);
     num = 0;
   }
 

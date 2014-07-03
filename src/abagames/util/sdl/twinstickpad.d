@@ -9,7 +9,7 @@ private import std.string;
 private import std.stream;
 private import std.math;
 private import derelict.sdl2.sdl;
-private import abagames.util.vector;
+private import gl3n.linalg;
 private import abagames.util.sdl.input;
 private import abagames.util.sdl.recordableinput;
 
@@ -157,7 +157,7 @@ public class TwinStickPadState {
   static enum Button {
     A = 16, B = 32, ANY = 48,
   };
-  Vector left, right;
+  vec2 left, right;
   int button;
  private:
 
@@ -177,8 +177,8 @@ public class TwinStickPadState {
   }
 
   public this() {
-    left = new Vector;
-    right = new Vector;
+    left = vec2(0);
+    right = vec2(0);
   }
 
   public this(TwinStickPadState s) {

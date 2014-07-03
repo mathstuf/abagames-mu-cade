@@ -6,7 +6,7 @@
 module abagames.util.math;
 
 private import std.math;
-private import abagames.util.vector;
+private import gl3n.linalg;
 
 /**
  * Math utility methods.
@@ -26,7 +26,7 @@ public class Math {
     d = (d + 180) % 360 - 180;
   }
 
-  public static bool checkVectorHit(Vector tp, Vector p, Vector pp, float hitWidth) {
+  public static bool checkVectorHit(vec2 tp, vec2 p, vec2 pp, float hitWidth) {
     float bmvx, bmvy, inaa;
     bmvx = pp.x;
     bmvy = pp.y;
@@ -48,4 +48,39 @@ public class Math {
     }
     return false;
   }
+}
+
+real fastdist(vec2 v1, vec2 v2 = vec2(0)) {
+  float ax = fabs(v1.x - v2.x);
+  float ay = fabs(v1.y - v2.y);
+  if (ax > ay)
+    return ax + ay / 2;
+  else
+    return ay + ax / 2;
+}
+
+real fastdist(vec3 v1, vec3 v2 = vec3(0)) {
+  float ax = fabs(v1.x - v2.x);
+  float ay = fabs(v1.y - v2.y);
+  float az = fabs(v1.z - v2.z);
+  float axy;
+  if (ax > ay)
+    axy = ax + ay / 2;
+  else
+    axy = ay + ax / 2;
+  if (axy > az)
+    return axy + az / 2;
+  else
+    return az + axy / 2;
+}
+
+bool contains(vec2 v1, float x, float y, float r = 1) {
+  if (x >= -v1.x * r && x <= v1.x * r && y >= -v1.y * r && y <= v1.y * r)
+    return true;
+  else
+    return false;
+}
+
+bool contains(vec2 v1, vec2 v2, float r = 1) {
+  return contains(v1, v2.x, v2.y, r);
 }

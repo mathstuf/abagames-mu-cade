@@ -5,12 +5,12 @@
  */
 module abagames.mcd.bullettarget;
 
-private import abagames.util.vector;
+private import gl3n.linalg;
 
 /**
  * Target that is aimed by bullets.
  */
 public interface BulletTarget {
  public:
-  Vector getTargetPos();
+  vec2 getTargetPos();
 }

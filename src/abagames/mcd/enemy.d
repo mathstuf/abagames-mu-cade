@@ -6,9 +6,10 @@
 module abagames.mcd.enemy;
 
 private import std.math;
+private import std.typecons;
 private import derelict.opengl3.gl;
 private import derelict.ode.ode;
-private import abagames.util.vector;
+private import gl3n.linalg;
 private import abagames.util.rand;
 private import abagames.util.math;
 private import abagames.util.ode.odeactor;
@@ -41,7 +42,7 @@ public class Enemy: OdeActor {
   GameManager gameManager;
   EnemySpec spec;
   EnemyState state;
-  Vector3 lastForce;
+  vec3 lastForce;
 
   invariant() {
     if (state && state.pos) {
@@ -74,14 +75,14 @@ public class Enemy: OdeActor {
     ship = cast(Ship) args[5];
     gameManager = cast(GameManager) args[6];
     state = new EnemyState(args);
-    lastForce = new Vector3;
+    lastForce = vec3(0);
   }
 
   public bool set(EnemySpec spec, float x, float y, float z, float deg,
-                  Vector3 sizeScale = null,
+                  Nullable!vec3 sizeScale = Nullable!vec3(),
                   float massScale = 1,
                   int type = 0) {
-    if (sizeScale)
+    if (!sizeScale.isNull)
       return set(spec, x, y, z, deg, sizeScale.x, sizeScale.y, sizeScale.z, massScale, type);
     else
       return set(spec, x, y, z, deg, 1, 1, 1, massScale, type);
@@ -134,7 +135,7 @@ public class Enemy: OdeActor {
       remove();
       return;
     }
-    Vector3 f = getForce();
+    vec3 f = getForce();
     lastForce.x = f.x;
     lastForce.y = f.y;
     lastForce.z = f.z;
@@ -223,7 +224,7 @@ public class Enemy: OdeActor {
     getFeedbackForce();
     for (int i = 0; i < contactJointNum; i++) {
       ContactJoint* cj = &(contactJoint[i]);
-      Vector3 ff = cj.feedbackForce;
+      vec3 ff = cj.feedbackForce;
       ff.x += lastForce.x * 0.9f;
       ff.y += lastForce.y * 0.9f;
       int pn = cast(int) ((fabs(ff.x) + fabs(ff.y)) * 0.01f);
@@ -295,7 +296,7 @@ public class Enemy: OdeActor {
     }
   }
 
-  public Vector3 pos() {
+  public vec3 pos() {
     return state.pos;
   }
 
@@ -393,12 +394,12 @@ public class EnemyPool: OdeActorPool!(Enemy) {
  */
 public class EnemyState {
  public:
-  Vector3 pos;
+  vec3 pos;
   float deg;
   GLdouble rot[16];
   dReal[3] linearVel;
   dReal[3] angularVel;
-  Vector3 sizeScale;
+  Nullable!vec3 sizeScale;
   float massScale;
   bool destroyable;
   int cnt;
@@ -433,7 +434,7 @@ public class EnemyState {
     assert(fabs(angularVel[1]) <>= 0);
     assert(fabs(angularVel[2]) <>= 0);
     assert(deg <>= 0);
-    if (sizeScale) {
+    if (!sizeScale.isNull) {
       assert(sizeScale.x > 0);
       assert(sizeScale.y > 0);
       assert(sizeScale.z > 0);
@@ -445,8 +446,8 @@ public class EnemyState {
 
   public this(Object[] args) {
     field = cast(Field) args[0];
-    pos = new Vector3;
-    sizeScale = new Vector3;
+    pos = vec3(0);
+    sizeScale = vec3(0);
     linePoint = new LinePoint(field, MAX_LINE_POINT_NUM);
     barrage = new Barrage;
     clearState();
