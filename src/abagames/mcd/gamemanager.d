@@ -8,6 +8,7 @@ module abagames.mcd.gamemanager;
 private import std.math;
 private import derelict.sdl2.sdl;
 private import derelict.ode.ode;
+private import gl3n.linalg;
 private import abagames.util.rand;
 private import abagames.util.support.gl;
 private import abagames.util.sdl.gamemanager;
@@ -374,60 +375,62 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       if (w > 150 && h > 100)
         screen.resized(w, h);
     }
+    mat4 view;
     if (state == GameState.IN_GAME || state == GameState.REPLAY)
-      field.setLookAt();
+      view = field.setLookAt();
     else
-      field.setLookAtTitle();
+      view = field.setLookAtTitle();
     Screen.setColor(1, 1, 1);
     glBegin(GL_LINES);
-    starParticles.draw();
+    starParticles.draw(view);
     glEnd();
     if (state == GameState.IN_GAME || state == GameState.REPLAY)
-      field.draw();
-    enemies.drawSpectrum();
+      field.draw(view);
+    enemies.drawSpectrum(view);
     if (state == GameState.IN_GAME || state == GameState.REPLAY) {
-      enemies.drawShadow();
-      enemies.draw();
+      enemies.drawShadow(view);
+      enemies.draw(view);
     }
-    particles.draw();
-    connectedParticles.draw();
+    particles.draw(view);
+    connectedParticles.draw(view);
     if (state == GameState.IN_GAME || state == GameState.REPLAY)
-      tailParticles.draw();
-    bullets.drawSpectrum();
+      tailParticles.draw(view);
+    bullets.drawSpectrum(view);
     if (state == GameState.IN_GAME || state == GameState.REPLAY) {
-      bullets.drawShadow();
-      bullets.draw();
-      ship.draw();
-      numIndicators.draw();
+      bullets.drawShadow(view);
+      bullets.draw(view);
+      ship.draw(view);
+      numIndicators.draw(view);
     }
-    field.drawOverlay();
+    mat4 orthoView = field.fixedOrthoView();
+    field.drawOverlay(orthoView);
   }
 
-  public void drawState() {
-    Letter.drawNum(score, 120, 21, 6);
-    Letter.drawTime(time, 610, 30, 6);
+  public void drawState(mat4 view) {
+    Letter.drawNum(view, score, 120, 21, 6);
+    Letter.drawTime(view, time, 610, 30, 6);
     switch (state) {
     case GameState.IN_GAME:
     case GameState.REPLAY:
       if (left > 0) {
         float x = 320 - (left - 1) * 12;
         for (int i = 0; i < left; i++) {
-          ship.drawLeft(x, 35);
+          ship.drawLeft(view, x, 35);
           x += 24;
         }
       }
       if (_isGameOver) {
         if (gameOverCnt > 60)
-          Letter.drawString("GAME OVER", 214, 200, 12);
+          Letter.drawString(view, "GAME OVER", 214, 200, 12);
       } else if (paused) {
         if (pauseCnt % 120 < 60)
-          Letter.drawString("PAUSE", 290, 420, 7);
+          Letter.drawString(view, "PAUSE", 290, 420, 7);
       }
       if (state == GameState.IN_GAME)
         break;
       goto case;
     case GameState.TITLE:
-      titleManager.draw();
+      titleManager.draw(view);
       break;
     default:
       assert(0);

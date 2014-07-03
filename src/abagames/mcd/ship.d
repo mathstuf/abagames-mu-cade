@@ -440,26 +440,26 @@ public class Ship: OdeActor, BulletTarget {
     glPopMatrix();
   }
 
-  public override void draw() {
-    shots.draw();
-    enhancedShots.draw();
+  public override void draw(mat4 view) {
+    shots.draw(view);
+    enhancedShots.draw(view);
     if (restartCnt > 0)
       return;
     for (int i = 0; i < tailNum; i++)
-      tails[i].draw();
-    linePoint.drawSpectrum();
+      tails[i].draw(view);
+    linePoint.drawSpectrum(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    linePoint.draw();
+    linePoint.draw(view);
     glPushMatrix();
     Screen.glTranslate(_pos);
     glMultMatrixd(rot.ptr);
-    subShape.draw();
+    subShape.draw(view);
     glPopMatrix();
   }
 
-  public void drawLeft(float x, float y) {
+  public void drawLeft(mat4 view, float x, float y) {
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(15, 15, 15);
@@ -469,14 +469,14 @@ public class Ship: OdeActor, BulletTarget {
     linePoint.endRecord();
     glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    linePoint.draw();
+    linePoint.draw(view);
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(15, 15, 15);
     glRotatef(180, 0, 0, 1);
-    subShape.draw();
+    subShape.draw(view);
     glPopMatrix();
   }
 
@@ -652,12 +652,12 @@ public class ShipTail: OdeActor {
     glPopMatrix();
   }
 
-  public override void draw() {
-    linePoint.drawSpectrum();
+  public override void draw(mat4 view) {
+    linePoint.drawSpectrum(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    linePoint.draw();
+    linePoint.draw(view);
   }
 
   public vec3 pos() {

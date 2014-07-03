@@ -182,7 +182,7 @@ public class BulletActor: Actor {
       removeForced();
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
   }
 
   public void slowdown() {
@@ -337,22 +337,22 @@ public class SimpleBullet: OdeActor {
       gameManager.addScore(10);
   }
 
-  public void drawSpectrum() {
+  public void drawSpectrum(mat4 view) {
     if (removeCnt > 0)
       return;
-    linePoint.drawSpectrum();
+    linePoint.drawSpectrum(view);
   }
 
-  public void drawShadow() {
+  public void drawShadow(mat4 view) {
     if (removeCnt > 0)
       return;
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (removeCnt > 0)
       return;
-    linePoint.draw();
+    linePoint.draw(view);
   }
 
   public void slowdown() {

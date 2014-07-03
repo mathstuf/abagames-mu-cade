@@ -94,18 +94,18 @@ public class BulletPool: ActorPool!(BulletActor), BulletsManager {
     cnt++;
   }
 
-  public void drawShadow() {
+  public void drawShadow(mat4 view) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    simpleBullets.drawShadow();
+    simpleBullets.drawShadow(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 
-  public void drawSpectrum() {
-    simpleBullets.drawSpectrum();
+  public void drawSpectrum(mat4 view) {
+    simpleBullets.drawSpectrum(view);
   }
 
-  public override void draw() {
-    simpleBullets.draw();
+  public override void draw(mat4 view) {
+    simpleBullets.draw(view);
   }
 
   public uint getTurn() {
@@ -143,16 +143,16 @@ public class SimpleBulletPool: OdeActorPool!(SimpleBullet) {
     super(n, args);
   }
 
-  public void drawShadow() {
+  public void drawShadow(mat4 view) {
     foreach (SimpleBullet sb; actor)
       if (sb.exists)
-        sb.drawShadow();
+        sb.drawShadow(view);
   }
 
-  public void drawSpectrum() {
+  public void drawSpectrum(mat4 view) {
     foreach (SimpleBullet sb; actor)
       if (sb.exists)
-        sb.drawSpectrum();
+        sb.drawSpectrum(view);
   }
 
   public override void clear() {

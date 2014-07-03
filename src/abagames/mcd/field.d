@@ -132,7 +132,7 @@ public class Field {
     eyePos.y += (ty - eyePos.y) * 0.05f;
   }
 
-  private void lookAt(float ex, float ey, float ez,
+  private mat4 lookAt(float ex, float ey, float ez,
                       float lx, float ly, float lz,
                       float ux, float uy, float uz) {
     mat4 mat = mat4.look_at(vec3(ex, ey, ez),
@@ -141,32 +141,37 @@ public class Field {
     mat.transpose();
 
     glMultMatrixf(mat.value_ptr);
+
+    mat.transpose();
+    return mat;
   }
 
-  public void setLookAt() {
+  public mat4 setLookAt() {
     glMatrixMode(GL_PROJECTION);
-    screen.setPerspective();
-    lookAt(eyePos.x, eyePos.y + EYE_POS_Y, EYE_POS_Z, eyePos.x, eyePos.y, 0, 0, 1, 0);
+    mat4 view = screen.setPerspective();
+    view = view * lookAt(eyePos.x, eyePos.y + EYE_POS_Y, EYE_POS_Z, eyePos.x, eyePos.y, 0, 0, 1, 0);
     glMatrixMode(GL_MODELVIEW);
+    return view;
   }
 
-  public void setLookAtTitle() {
+  public mat4 setLookAtTitle() {
     glMatrixMode(GL_PROJECTION);
-    screen.setPerspective();
-    lookAt(0, EYE_POS_Y, EYE_POS_Z, 0, 0, 0, 0, 1, 0);
+    mat4 view = screen.setPerspective();
+    view = view * lookAt(0, EYE_POS_Y, EYE_POS_Z, 0, 0, 0, 0, 1, 0);
     glMatrixMode(GL_MODELVIEW);
+    return view;
   }
 
-  public void draw() {
+  public void draw(mat4 view) {
     glBegin(GL_LINES);
     for (int z = 0; z > -8; z--) {
       float a = 1;
       if (z < 0)
         a = 0.8f + z * 0.05f;
-      drawSquare(-_size.x, -_size.y, _size.x * 2, _size.y * 2, z, a);
+      drawSquare(view, -_size.x, -_size.y, _size.x * 2, _size.y * 2, z, a);
     }
     for (float w = 0.98f; w < 1.0f; w += 0.0033f)
-      drawSquare(-_size.x * w, -_size.y * w, _size.x * w * 2, _size.y * w * 2, 0, 0.9f);
+      drawSquare(view, -_size.x * w, -_size.y * w, _size.x * w * 2, _size.y * w * 2, 0, 0.9f);
     for (float x = -0.9f; x < 1.0f; x += 0.1f) {
       Screen.setColor(1, 1, 1);
       glVertex3f(_size.x * x, -_size.y, 0);
@@ -190,11 +195,11 @@ public class Field {
     glEnd();
   }
 
-  private void drawSquare(float x, float y, float w, float h, float z, float a) {
-    Screen.drawLine(x, y, z, x + w, y, z, a);
-    Screen.drawLine(x + w, y, z, x + w, y + h, z, a);
-    Screen.drawLine(x + w, y + h, z, x, y + h, z, a);
-    Screen.drawLine(x, y + h, z, x, y, z, a);
+  private void drawSquare(mat4 view, float x, float y, float w, float h, float z, float a) {
+    Screen.drawLine(view, x, y, z, x + w, y, z, a);
+    Screen.drawLine(view, x + w, y, z, x + w, y + h, z, a);
+    Screen.drawLine(view, x + w, y + h, z, x, y + h, z, a);
+    Screen.drawLine(view, x, y + h, z, x, y, z, a);
   }
 
   static const float[][] OVERLAY_BAR_POS = [
@@ -205,9 +210,9 @@ public class Field {
     [25, 466, 0, 7], [270, 466, 0, 7],
   ];
 
-  public void drawOverlay() {
+  public void drawOverlay(mat4 view) {
     viewOrthoFixed();
-    gameManager.drawState();
+    gameManager.drawState(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBegin(GL_QUADS);
     for (int i = 1; i < OVERLAY_BAR_POS.length; i++) {
@@ -242,16 +247,16 @@ public class Field {
       glBlendFunc(GL_DST_COLOR,GL_ZERO);
       Screen.setColorForced(1, 1, 1);
       _titleTexture.bindMask(i);
-      drawLetter(i, x, y, lsz);
+      drawLetter(view, i, x, y, lsz);
       glBlendFunc(GL_ONE, GL_ONE);
       Screen.setColor(1, 0, 0);
       _titleTexture.bind(i);
-      drawLetter(i, x, y, lsz);
+      drawLetter(view, i, x, y, lsz);
       glBlendFunc(GL_DST_COLOR,GL_ZERO);
       glBlendFunc(GL_ONE, GL_ONE);
       Screen.setColor(1, 1, 1);
       _titleTexture.bind(i);
-      drawLetter(i, x, y, lsz);
+      drawLetter(view, i, x, y, lsz);
       if (i == 0)
         x += lof * 1.0f;
       else
@@ -262,7 +267,7 @@ public class Field {
     viewPerspective();
   }
 
-  public void drawLetter(int i, float cx, float cy, float width) {
+  public void drawLetter(mat4 view, int i, float cx, float cy, float width) {
     glBegin(GL_TRIANGLE_FAN);
     glTexCoord2f(0, 0);
     glVertex3f(cx - width / 2, cy - width / 2, 0);
@@ -273,6 +278,11 @@ public class Field {
     glTexCoord2f(0, 1);
     glVertex3f(cx - width / 2, cy + width / 2, 0);
     glEnd();
+  }
+
+  public mat4 fixedOrthoView() {
+    // TODO: Remove the 640x480 assumption.
+    return mat4.orthographic(0, 640, 480, 0, -1, 1);
   }
 
   private void viewOrthoFixed() {
@@ -321,7 +331,7 @@ public class Wall: OdeActor {
   public override void move() {
   }
 
-  public override void draw() {}
+  public override void draw(mat4 view) {}
 }
 
 public class FloorWall: Wall {}
