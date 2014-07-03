@@ -29,6 +29,7 @@ public class World {
 
   public void init() {
     DerelictODE.load();
+    dInitODE2(0);
     world = dWorldCreate();
     dWorldSetContactMaxCorrectingVel(world, CONTACT_MAX_CORRECTING_VEL);
     dWorldSetContactSurfaceLayer (world, CONTACT_SURFACE_LAYER);
