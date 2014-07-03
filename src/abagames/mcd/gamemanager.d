@@ -357,6 +357,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       return;
     prefManager.prefData.recordResult(score, time);
     prefManager.save();
+    // TODO: Fix. Seems to have had bugs from before.
     //saveLastReplay();
   }
 
