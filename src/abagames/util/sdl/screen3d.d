@@ -29,7 +29,7 @@ public class Screen3D: Screen, SizableScreen {
   protected abstract void init();
   protected abstract void close();
 
-  public void initSDL() {
+  public mat4 initSDL() {
     // Initialize Derelict.
     DerelictSDL2.load();
     DerelictGL.load(); // We use deprecated features.
@@ -65,33 +65,41 @@ public class Screen3D: Screen, SizableScreen {
     DerelictGL.reload();
     glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    resized(_width, _height);
+    mat4 windowmat = resized(_width, _height);
     SDL_ShowCursor(SDL_DISABLE);
     init();
+    return windowmat;
   }
 
   // Reset a viewport when the screen is resized.
-  public void screenResized() {
+  public mat4 screenResized() {
     glViewport(0, 0, _width, _height);
     glMatrixMode(GL_PROJECTION);
-    setPerspective();
+    mat4 view = setPerspective();
     glMatrixMode(GL_MODELVIEW);
+    return view;
   }
 
-  public void setPerspective() {
+  public mat4 setPerspective() {
     glLoadIdentity();
     //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
+    const float ratio = cast(GLfloat) _height / cast(GLfloat) _width;
     glFrustum(-_nearPlane,
               _nearPlane,
-              -_nearPlane * cast(GLfloat) _height / cast(GLfloat) _width,
-              _nearPlane * cast(GLfloat) _height / cast(GLfloat) _width,
+              -_nearPlane * ratio,
+              _nearPlane * ratio,
               0.1f, _farPlane);
+
+    return mat4.perspective(
+      -_nearPlane, _nearPlane,
+      -_nearPlane * ratio, _nearPlane * ratio,
+      0.1f, _farPlane);
   }
 
-  public void resized(int w, int h) {
+  public mat4 resized(int w, int h) {
     _width = w;
     _height = h;
-    screenResized();
+    return screenResized();
   }
 
   public void closeSDL() {

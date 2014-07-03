@@ -5,6 +5,7 @@
  */
 module abagames.util.sdl.gamemanager;
 
+private import gl3n.linalg;
 private import abagames.util.prefmanager;
 private import abagames.util.sdl.mainloop;
 private import abagames.util.sdl.screen;

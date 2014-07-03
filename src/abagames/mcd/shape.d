@@ -24,7 +24,7 @@ public interface Shape {
   public void addMass(dMass* m, Nullable!vec3 sizeScale = Nullable!vec3(), float massScale = 1);
   public void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3());
   public void recordLinePoints(LinePoint lp);
-  public void drawShadow(LinePoint lp);
+  public void drawShadow(mat4 view, LinePoint lp);
 }
 
 public class ShapeGroup: Shape {
@@ -61,9 +61,9 @@ public class ShapeGroup: Shape {
       s.recordLinePoints(lp);
   }
 
-  public void drawShadow(LinePoint lp) {
+  public void drawShadow(mat4 view, LinePoint lp) {
     foreach (Shape s; shapes)
-      s.drawShadow(lp);
+      s.drawShadow(view, lp);
   }
 }
 
@@ -139,7 +139,7 @@ public abstract class ShapeBase: Shape {
   }
 
   public abstract void recordLinePoints(LinePoint lp);
-  public abstract void drawShadow(LinePoint lp);
+  public abstract void drawShadow(mat4 view, LinePoint lp);
 }
 
 public class Square: ShapeBase {
@@ -173,7 +173,7 @@ public class Square: ShapeBase {
     lp.record(-1, -1, 0);
   }
 
-  public override void drawShadow(LinePoint lp) {
+  public override void drawShadow(mat4 view, LinePoint lp) {
     lp.setPos(pos);
     lp.setSize(size);
     if (!lp.setShadowColor())
@@ -239,7 +239,7 @@ public class Sphere: ShapeBase {
     lp.record(-1, -1, 0);
   }
 
-  public override void drawShadow(LinePoint lp) {
+  public override void drawShadow(mat4 view, LinePoint lp) {
     lp.setPos(pos);
     lp.setSize(size);
     if (!lp.setShadowColor())
@@ -275,7 +275,7 @@ public class Triangle: ShapeBase {
     lp.record( 0,  1, 0);
   }
 
-  public override void drawShadow(LinePoint lp) {
+  public override void drawShadow(mat4 view, LinePoint lp) {
     lp.setPos(pos);
     lp.setSize(size);
     if (!lp.setShadowColor())
@@ -329,7 +329,7 @@ public class Box: ShapeBase {
     lp.record(-1,  1, -1);
   }
 
-  public override void drawShadow(LinePoint lp) {
+  public override void drawShadow(mat4 view, LinePoint lp) {
     lp.setPos(pos);
     lp.setSize(size);
     if (!lp.setShadowColor())
@@ -531,17 +531,17 @@ public class LinePoint {
     return true;
   }
 
-  public void draw() {
+  public void draw(mat4 view) {
     if (isFirstRecord)
       return;
     glBegin(GL_LINES);
     for (int i = 0; i < posIdx; i += 2)
-      Screen.drawLine(pos[i].x, pos[i].y, pos[i].z,
-                      pos[i + 1].x, pos[i + 1].y, pos[i + 1].z, _alpha);
+      Screen.drawLine(view, pos[i].x, pos[i].y, pos[i].z,
+                            pos[i + 1].x, pos[i + 1].y, pos[i + 1].z, _alpha);
     glEnd();
   }
 
-  public void drawWithSpectrumColor() {
+  public void drawWithSpectrumColor(mat4 view) {
     if (isFirstRecord)
       return;
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
@@ -553,7 +553,7 @@ public class LinePoint {
     glEnd();
   }
 
-  public void drawSpectrum() {
+  public void drawSpectrum(mat4 view) {
     if (spectrumLength <= 0 || isFirstRecord)
       return;
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
@@ -602,11 +602,11 @@ public class LinePoint {
 }
 
 public interface Drawable {
-  public void draw();
+  public void draw(mat4 view);
 }
 
 public class EyeShape: Drawable {
-  public void draw() {
+  public void draw(mat4 view) {
     Screen.setColor(1.0f, 0, 0);
     glBegin(GL_LINE_LOOP);
     glVertex3f(-0.5, 0.5, 0);
@@ -637,7 +637,7 @@ public class EyeShape: Drawable {
 }
 
 public class CenterShape: Drawable {
-  public void draw() {
+  public void draw(mat4 view) {
     Screen.setColor(0.6f, 1.0f, 0.5f);
     glBegin(GL_TRIANGLE_FAN);
     glVertex3f(-0.2, -0.2, 0);

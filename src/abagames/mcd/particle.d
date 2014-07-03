@@ -141,9 +141,9 @@ public class Particle: Actor {
     glPopMatrix();
   }
 
-  public override void draw() {
-    linePoint.drawSpectrum();
-    linePoint.drawWithSpectrumColor();
+  public override void draw(mat4 view) {
+    linePoint.drawSpectrum(view);
+    linePoint.drawWithSpectrumColor(view);
   }
 }
 
@@ -296,11 +296,11 @@ public class ConnectedParticle: Actor {
     glPopMatrix();
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (!prevParticle || !prevParticle.exists)
       return;
-    linePoint.drawSpectrum();
-    linePoint.drawWithSpectrumColor();
+    linePoint.drawSpectrum(view);
+    linePoint.drawWithSpectrumColor(view);
     glPushMatrix();
     Screen.glTranslate(_pos);
     Screen.setColor(r, g, b);
@@ -460,9 +460,9 @@ public class TailParticle: Actor {
     glPopMatrix();
   }
 
-  public override void draw() {
-    linePoint.drawSpectrum();
-    linePoint.drawWithSpectrumColor();
+  public override void draw(mat4 view) {
+    linePoint.drawSpectrum(view);
+    linePoint.drawWithSpectrumColor(view);
   }
 }
 
@@ -519,7 +519,7 @@ public class StarParticle: Actor {
       _exists = false;
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     glVertex3f(pos.x, pos.y, pos.z);
     glVertex3f(pos.x, pos.y, pos.z + size);
   }
@@ -581,16 +581,16 @@ public class NumIndicator: Actor {
       _exists = false;
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (num2 <= 1) {
-      Letter.drawNumSign(num1, pos.x + Letter.getWidthNum(num1, size) / 2, pos.y, size);
+      Letter.drawNumSign(view, num1, pos.x + Letter.getWidthNum(num1, size) / 2, pos.y, size);
     } else {
       float wd = Letter.getWidthNum(num1, size) + Letter.getWidth(1, size) + Letter.getWidthNum(num2, size);
       float x;
       x = pos.x - wd / 2 + Letter.getWidthNum(num1, size);
-      Letter.drawNumSign(num1, x, pos.y, size);
+      Letter.drawNumSign(view, num1, x, pos.y, size);
       x = pos.x + wd / 2;
-      Letter.drawNumSign(num2, x, pos.y, size, 33);
+      Letter.drawNumSign(view, num2, x, pos.y, size, 33);
     }
   }
 }

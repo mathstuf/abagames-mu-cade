@@ -6,6 +6,7 @@
 module abagames.util.sdl.mainloop;
 
 private import derelict.sdl2.sdl;
+private import gl3n.linalg;
 private import abagames.util.logger;
 private import abagames.util.rand;
 private import abagames.util.prefmanager;

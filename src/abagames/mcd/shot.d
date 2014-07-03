@@ -111,14 +111,14 @@ public template ShotImpl() {
     glPopMatrix();
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (removeCnt > 0)
       return;
-    linePoint.drawSpectrum();
+    linePoint.drawSpectrum(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    linePoint.draw();
+    linePoint.draw(view);
   }
 
   public float deg() nothrow {

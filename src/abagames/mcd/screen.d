@@ -5,6 +5,7 @@
  */
 module abagames.mcd.screen;
 
+private import gl3n.linalg;
 private import abagames.util.support.gl;
 private import abagames.util.sdl.screen3d;
 private import abagames.mcd.field;
@@ -31,14 +32,15 @@ public class Screen: Screen3D {
     setClearColor(0, 0, 0, 1);
   }
 
-  public void setField(Field field) {
+  public mat4 setField(Field field) {
     this.field = field;
-    screenResized();
+    return screenResized();
   }
 
   protected override void close() {}
 
-  public static void drawLine(float x1, float y1, float z1,
+  public static void drawLine(mat4 view,
+                              float x1, float y1, float z1,
                               float x2, float y2, float z2, float a = 1) {
     Screen.setColor(a, a, a);
     glVertex3f(x1, y1, z1);
@@ -53,8 +55,8 @@ public class Screen: Screen3D {
     glColor4f(r, g ,b, a);
   }
 
-  public override void screenResized() {
-    super.screenResized();
+  public override mat4 screenResized() {
+    mat4 view = super.screenResized();
     float lw = (cast(float) width / 640 + cast(float) height / 480) / 2;
     if (lw < 1)
       lw = 1;
@@ -63,6 +65,7 @@ public class Screen: Screen3D {
     glLineWidth(lw);
     glViewport(0, 0, width, height);
     if (field)
-      field.setLookAt();
+      view = field.setLookAt();
+    return view;
   }
 }
