@@ -102,10 +102,14 @@ public template ShotImpl() {
   }
 
   public void recordLinePoints() {
+    mat4 model = mat4.identity;
+    model.rotate(-_deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, 0);
+
     glPushMatrix();
     Screen.glTranslate(pos);
     glRotatef(_deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
     glPopMatrix();

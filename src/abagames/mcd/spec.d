@@ -213,9 +213,15 @@ public template CentMoveImpl() {
 
   public override void drawSubShape(mat4 view, EnemyState state) {
     if (state.isHead) {
+      mat4 model = mat4.identity;
+      model.scale(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
+      model = model * state.rot;
+      model.translate(state.pos.x, state.pos.y, state.pos.z);
+      subShape.setModelMatrix(model);
+
       glPushMatrix();
       Screen.glTranslate(state.pos);
-      glMultMatrixd(state.rot.ptr);
+      glMultMatrixf(state.rot.transposed.value_ptr);
       glScalef(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
       subShape.draw(view);
       glPopMatrix();

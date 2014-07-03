@@ -63,7 +63,7 @@ public class Ship: OdeActor, BulletTarget {
   ShotPool shots;
   float deg;
   float trgDeg;
-  GLdouble rot[16];
+  mat4 rot;
   int restartCnt;
   int fireCnt;
   float fireInterval;
@@ -431,10 +431,13 @@ public class Ship: OdeActor, BulletTarget {
   }
 
   public void recordLinePoints() {
+    mat4 model = rot;
+    model.translate(_pos.x, _pos.y, _pos.z);
+
     glPushMatrix();
     Screen.glTranslate(_pos);
-    glMultMatrixd(rot.ptr);
-    linePoint.beginRecord();
+    glMultMatrixf(rot.transposed.value_ptr);
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
     glPopMatrix();
@@ -452,19 +455,31 @@ public class Ship: OdeActor, BulletTarget {
     shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     linePoint.draw(view);
+
+    mat4 model = mat4.identity;
+    model = model * rot;
+    model.translate(_pos.x, _pos.y, _pos.z);
+    subShape.setModelMatrix(model);
+
     glPushMatrix();
     Screen.glTranslate(_pos);
-    glMultMatrixd(rot.ptr);
+    glMultMatrixf(rot.transposed.value_ptr);
     subShape.draw(view);
     glPopMatrix();
   }
 
   public void drawLeft(mat4 view, float x, float y) {
+    mat4 model = mat4.identity();
+    model.rotate(-PI, vec3(0, 0, 1));
+    model.scale(15, 15, 15);
+    model.translate(x, y, 0);
+    subShape.setModelMatrix(model);
+
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(15, 15, 15);
     glRotatef(180, 0, 0, 1);
-    linePoint.beginRecord();
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
     glPopMatrix();
@@ -515,7 +530,7 @@ public class ShipTail: OdeActor {
   static Rand rand;
   vec3 _pos;
   float deg;
-  GLdouble rot[16];
+  mat4 rot;
   vec3 size;
   Field field;
   Ship ship;
@@ -642,11 +657,16 @@ public class ShipTail: OdeActor {
   }
 
   public void recordLinePoints() {
+    mat4 model = mat4.identity;
+    model.scale(size.x, size.y, size.z);
+    model = model * rot;
+    model.translate(_pos.x, _pos.y, _pos.z);
+
     glPushMatrix();
     Screen.glTranslate(_pos);
-    glMultMatrixd(rot.ptr);
+    glMultMatrixf(rot.transposed.value_ptr);
     glScalef(size.x, size.y, size.z);
-    linePoint.beginRecord();
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
     glPopMatrix();
