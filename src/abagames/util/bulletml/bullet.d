@@ -148,7 +148,7 @@ public class Bullet: bml.BulletManager {
   }
 
   public void set(bml.BulletMLRunner runner,
-		  float x, float y, float deg, float speed, float rank) {
+                  float x, float y, float deg, float speed, float rank) {
     set(x, y, deg, speed, rank);
     setRunner(runner);
   }

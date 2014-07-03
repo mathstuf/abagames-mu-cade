@@ -140,7 +140,7 @@ public class BulletActor: Actor {
     if (isAimTop) {
       float ox = tpos.x - bullet.pos.x;
       bullet.deg = (atan2(-ox, tpos.y - bullet.pos.y) * bullet.xReverse
-		    + PI / 2) * bullet.yReverse - PI / 2;
+                    + PI / 2) * bullet.yReverse - PI / 2;
     }
     if (isWait && waitCnt > 0) {
       waitCnt--;

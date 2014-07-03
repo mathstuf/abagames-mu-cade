@@ -36,7 +36,7 @@ public class MainLoop {
   float _slowdownMaxRatio = 1.75f;
 
   public this(Screen screen, Input input,
-	      GameManager gameManager, PrefManager prefManager) {
+              GameManager gameManager, PrefManager prefManager) {
     this.screen = screen;
     this.input = input;
     gameManager.setMainLoop(this);
