@@ -31,6 +31,11 @@ target_link_libraries(mcd
     Derelict::opengl3
     Derelict::sdl2
     Derelict::util)
+set_target_properties(mcd
+    PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
 add_executable(mu-cade
     boot.d)
@@ -40,3 +45,8 @@ target_link_libraries(mu-cade
     mcd_util_bulletml
     mcd_util_ode
     mcd_util_sdl)
+set_target_properties(mu-cade
+    PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
