@@ -388,10 +388,9 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       view = field.setLookAt();
     else
       view = field.setLookAtTitle();
-    Screen.setColor(1, 1, 1);
-    glBegin(GL_LINES);
+    StarParticle.setColor(vec4(1, 1, 1, 1));
     starParticles.draw(view);
-    glEnd();
+    Screen.setColor(1, 1, 1);
     if (state == GameState.IN_GAME || state == GameState.REPLAY)
       field.draw(view);
     enemies.drawSpectrum(view);
