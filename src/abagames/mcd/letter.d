@@ -8,7 +8,7 @@ module abagames.mcd.letter;
 private import std.math;
 private import gl3n.linalg;
 private import abagames.util.support.gl;
-private import abagames.util.sdl.displaylist;
+private import abagames.util.sdl.shaderprogram;
 private import abagames.mcd.screen;
 
 /**
@@ -16,25 +16,70 @@ private import abagames.mcd.screen;
  */
 public class Letter {
  public:
-  static DisplayList displayList;
   static const float LETTER_WIDTH = 2.1f;
   static const float LETTER_HEIGHT = 3.0f;
  private:
   static const int LETTER_NUM = 44;
   static const int DISPLAY_LIST_NUM = LETTER_NUM;
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
 
   public static void init() {
-    displayList = new DisplayList(DISPLAY_LIST_NUM);
-    displayList.resetList();
-    for (int i = 0; i < LETTER_NUM; i++) {
-      displayList.newList();
-      setLetter(i);
-      displayList.endList();
-    }
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform mat4 segmentmat;\n"
+      "uniform mat4 drawmat;\n"
+      "uniform vec2 size;\n"
+      "\n"
+      "attribute vec2 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * drawmat * segmentmat * vec4(pos * size, 0, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform float alpha;\n"
+      "uniform float brightness;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(vec3(brightness), alpha);\n"
+      "}\n"
+    );
+    GLint posLoc = 0;
+    program.bindAttribLocation(posLoc, "pos");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] VTX = [
+      -0.5f,   0,
+      -0.33f, -0.5f,
+       0.33f, -0.5f,
+       0.5f,   0,
+       0.33f,  0.5f,
+      -0.33f,  0.5f
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
   }
 
   public static void close() {
-    displayList.close();
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    program.close();
   }
 
   public static float getWidth(int n, float s) {
@@ -59,37 +104,35 @@ public class Letter {
   }
 
   public static void drawLetter(mat4 view, int n) {
-    displayList.call(n);
+    drawLetter(view, n, 0, 0, 1, 0);
   }
 
   private static void drawLetter(mat4 view, int n, float x, float y, float s, float d) {
-    mat4 model = mat4.identity;
-    model.rotate(-d / 180. * PI, vec3(0, 0, 1));
-    model.scale(s, s, s);
-    model.translate(x, y, 0);
-    // TODO: Set model.
-
-    glPushMatrix();
-    glTranslatef(x, y, 0);
-    glScalef(s, s, s);
-    glRotatef(d, 0, 0, 1);
-    displayList.call(n);
-    glPopMatrix();
+    drawLetter(view, n, x, y, s, 1, d);
   }
 
   private static void drawLetterRev(mat4 view, int n, float x, float y, float s, float d) {
-    mat4 model = mat4.identity;
-    model.rotate(-d / 180. * PI, vec3(0, 0, 1));
-    model.scale(s, -s, s);
-    model.translate(x, y, 0);
-    // TODO: Set model.
+    drawLetter(view, n, x, y, s, -1, d);
+  }
 
-    glPushMatrix();
-    glTranslatef(x, y, 0);
-    glScalef(s, -s, s);
-    glRotatef(d, 0, 0, 1);
-    displayList.call(n);
-    glPopMatrix();
+  private static void drawLetter(mat4 view, int n, float x, float y, float s, int f, float d) {
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("brightness", Screen.brightness);
+
+    mat4 draw = mat4.identity;
+    draw.rotate(-d / 180. * PI, vec3(0, 0, 1));
+    draw.scale(s, s * f, s);
+    draw.translate(x, y, 0);
+    program.setUniform("drawmat", draw);
+
+    glBindVertexArray(vao);
+
+    setLetter(n);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 
   public static enum Direction {
@@ -296,29 +339,15 @@ public class Letter {
     mat4 segmentmat = mat4.identity;
     segmentmat.rotate(-deg / 180. * PI, vec3(0, 0, 1));
     segmentmat.translate(x - width / 2, y, 0);
-    // TODO: Set the segment.
 
-    glPushMatrix();
-    glTranslatef(x - width / 2, y, 0);
-    glRotatef(deg, 0, 0, 1);
-    Screen.setColor(1, 1, 1, 0.5);
-    glBegin(GL_TRIANGLE_FAN);
-    drawSegmentPart(width, height);
-    glEnd();
-    Screen.setColor(1, 1, 1);
-    glBegin(GL_LINE_LOOP);
-    drawSegmentPart(width, height);
-    glEnd();
-    glPopMatrix();
-  }
+    program.setUniform("segmentmat", segmentmat);
+    program.setUniform("size", width, height);
 
-  private static void drawSegmentPart(float width, float height) {
-    glVertex3f(-width / 2, 0, 0);
-    glVertex3f(-width / 3 * 1, -height / 2, 0);
-    glVertex3f( width / 3 * 1, -height / 2, 0);
-    glVertex3f( width / 2, 0, 0);
-    glVertex3f( width / 3 * 1,  height / 2, 0);
-    glVertex3f(-width / 3 * 1,  height / 2, 0);
+    program.setUniform("alpha", 0.5);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
+
+    program.setUniform("alpha", 1.);
+    glDrawArrays(GL_LINE_LOOP, 0, 6);
   }
 
   private static const float[5][16][] spData =
