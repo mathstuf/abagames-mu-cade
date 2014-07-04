@@ -74,6 +74,9 @@ public class BulletActor: Actor {
     linePoint.setSpectrumParams(1, 0.25f, 0.5f, 0.2f);
   }
 
+  public override void close() {
+  }
+
   public void set(bml.BulletMLRunner runner,
                   float x, float y, float deg, float speed) {
     bullet.set(runner, x, y, deg, speed, 0);

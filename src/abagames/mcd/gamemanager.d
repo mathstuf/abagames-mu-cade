@@ -206,6 +206,13 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 
   public override void close() {
     world.close();
+    enemies.close();
+    bullets.close();
+    particles.close();
+    connectedParticles.close();
+    tailParticles.close();
+    starParticles.close();
+    numIndicators.close();
     SoundManager.haltBgm();
     Letter.close();
   }

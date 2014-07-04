@@ -24,6 +24,7 @@ public class Actor {
   }
 
   public abstract void init(Object[] args);
+  public abstract void close();
   public abstract void move();
   public abstract void draw(mat4 view);
 }
@@ -52,6 +53,11 @@ public class ActorPool(T) {
       a.init(args);
     }
     actorIdx = 0;
+  }
+
+  public void close() {
+    foreach (T ac; actor)
+      ac.close();
   }
 
   public T getInstance() {
