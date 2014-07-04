@@ -167,6 +167,9 @@ public class ParticlePool: ActorPool!(Particle) {
 public class ConnectedParticle: Actor {
   static const float SPRING_CONSTANT = 0.04f;
   static Rand rand;
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
   Field field;
   vec3 _pos;
   vec3 _vel;
@@ -216,9 +219,63 @@ public class ConnectedParticle: Actor {
     linePoint.setSize(vec3(1, 1, 1));
     r = g = b = 0;
     baseLength = 0;
+
+    if (program !is null) {
+      return;
+    }
+
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform vec3 pos;\n"
+      "uniform vec3 prevPos;\n"
+      "\n"
+      "attribute float usePrev;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4((usePrev == 0.) ? prevPos : pos, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform vec3 color;\n"
+      "uniform float brightness;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint usePrevLoc = 0;
+    program.bindAttribLocation(usePrevLoc, "usePrev");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] USEPREV = [
+      0,
+      1
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, USEPREV.length * float.sizeof, USEPREV.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(usePrevLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(usePrevLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
   }
 
   public override void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
   }
 
   public void set(float x, float y, float d, float s, float r, float g, float b,
@@ -318,20 +375,19 @@ public class ConnectedParticle: Actor {
     linePoint.drawSpectrum(view);
     linePoint.drawWithSpectrumColor(view);
 
-    mat4 model = mat4.identity;
-    model.translate(_pos.x, _pos.y, _pos.z);
-    // TODO: Set model.
+    program.use();
 
-    glPushMatrix();
-    Screen.glTranslate(_pos);
-    Screen.setColor(r, g, b);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(prevParticle.pos.x - _pos.x,
-               prevParticle.pos.y - _pos.y,
-               prevParticle.pos.z - _pos.z);
-    glEnd();
-    glPopMatrix();
+    program.setUniform("projmat", view);
+    program.setUniform("pos", _pos);
+    program.setUniform("prevPos", prevParticle.pos);
+    program.setUniform("color", r, g, b);
+    program.setUniform("brightness", Screen.brightness);
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 
   public vec3 pos() {
