@@ -11,6 +11,7 @@ private import abagames.util.actor;
 private import abagames.util.rand;
 private import abagames.util.math;
 private import abagames.util.support.gl;
+private import abagames.util.sdl.shaderprogram;
 private import abagames.mcd.shape;
 private import abagames.mcd.field;
 private import abagames.mcd.screen;
@@ -509,6 +510,9 @@ public class StarParticle: Actor {
   vec3 vel;
   float size;
   int cnt;
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
 
   invariant() {
     if (pos) {
@@ -527,9 +531,65 @@ public class StarParticle: Actor {
     pos = vec3(0);
     vel = vec3(0);
     size = 1;
+
+    if (program !is null) {
+      return;
+    }
+
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform vec3 pos;\n"
+      "uniform float size;\n"
+      "\n"
+      "attribute float sizeFactor;\n"
+      "\n"
+      "void main() {\n"
+      "  vec3 spos = pos;\n"
+      "  spos.z += size * sizeFactor;\n"
+      "  gl_Position = projmat * vec4(spos, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform vec4 color;\n"
+      "uniform float brightness;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = color * vec4(vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint sizeFactorLoc = 0;
+    program.bindAttribLocation(sizeFactorLoc, "sizeFactor");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] SIZEFACTOR = [
+      0,
+      1
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, SIZEFACTOR.length * float.sizeof, SIZEFACTOR.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(sizeFactorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(sizeFactorLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
   }
 
   public override void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
   }
 
   public void set(float x, float y, float z, float speed, float sz) {
@@ -549,9 +609,27 @@ public class StarParticle: Actor {
       _exists = false;
   }
 
+  public static void setColor(vec4 color) {
+    program.use();
+
+    program.setUniform("color", color);
+
+    glUseProgram(0);
+  }
+
   public override void draw(mat4 view) {
-    glVertex3f(pos.x, pos.y, pos.z);
-    glVertex3f(pos.x, pos.y, pos.z + size);
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("pos", pos);
+    program.setUniform("size", size);
+    program.setUniform("brightness", Screen.brightness);
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 }
 

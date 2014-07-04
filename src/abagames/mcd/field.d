@@ -11,6 +11,7 @@ private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.rand;
 private import abagames.util.support.gl;
+private import abagames.util.sdl.shaderprogram;
 private import abagames.util.sdl.texture;
 private import abagames.util.ode.world;
 private import abagames.util.ode.odeactor;
@@ -30,6 +31,7 @@ public class Field {
   static const float EYE_POS_Y = -2.5f;
   static const float EYE_POS_Z = 15f;
   static Rand rand;
+  static ShaderProgram program;
   Screen screen;
   World world;
   GameManager gameManager;
