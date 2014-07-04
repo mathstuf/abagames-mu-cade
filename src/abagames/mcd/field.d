@@ -163,7 +163,6 @@ public class Field {
   }
 
   public void draw(mat4 view) {
-    glBegin(GL_LINES);
     for (int z = 0; z > -8; z--) {
       float a = 1;
       if (z < 0)
@@ -172,6 +171,7 @@ public class Field {
     }
     for (float w = 0.98f; w < 1.0f; w += 0.0033f)
       drawSquare(view, -_size.x * w, -_size.y * w, _size.x * w * 2, _size.y * w * 2, 0, 0.9f);
+    glBegin(GL_LINES);
     for (float x = -0.9f; x < 1.0f; x += 0.1f) {
       Screen.setColor(1, 1, 1);
       glVertex3f(_size.x * x, -_size.y, 0);

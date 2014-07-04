@@ -506,11 +506,9 @@ public class LinePoint {
   public void draw(mat4 view) {
     if (isFirstRecord)
       return;
-    glBegin(GL_LINES);
     for (int i = 0; i < posIdx - 1; i += 2)
       Screen.drawLine(view, pos[i].x, pos[i].y, pos[i].z,
                             pos[i + 1].x, pos[i + 1].y, pos[i + 1].z, _alpha);
-    glEnd();
   }
 
   public void drawWithSpectrumColor(mat4 view) {
