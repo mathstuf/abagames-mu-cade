@@ -59,6 +59,9 @@ public class OdeActor: Actor {
     bodyCreated = false;
   }
 
+  public override void close() {
+  }
+
   public void set(bool withBody = true) {
     if (withBody)
       createBody();

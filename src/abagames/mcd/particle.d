@@ -72,6 +72,9 @@ public class Particle: Actor {
     r = g = b = 0;
   }
 
+  public override void close() {
+  }
+
   public void set(vec2 p,
                   float vx, float vy, float sz, float r, float g, float b,
                   int c = 60) nothrow {
@@ -212,6 +215,9 @@ public class ConnectedParticle: Actor {
     linePoint.setSize(vec3(1, 1, 1));
     r = g = b = 0;
     baseLength = 0;
+  }
+
+  public override void close() {
   }
 
   public void set(float x, float y, float d, float s, float r, float g, float b,
@@ -415,6 +421,9 @@ public class TailParticle: Actor {
     r = g = b = 0;
   }
 
+  public override void close() {
+  }
+
   public void set(float x, float y, float z, float sz, float r, float g, float b, int c) {
     pos.x = x;
     pos.y = y;
@@ -520,6 +529,9 @@ public class StarParticle: Actor {
     size = 1;
   }
 
+  public override void close() {
+  }
+
   public void set(float x, float y, float z, float speed, float sz) {
     pos.x = x;
     pos.y = y;
@@ -576,6 +588,9 @@ public class NumIndicator: Actor {
     size = 1;
     num1 = 0;
     num2 = -1;
+  }
+
+  public override void close() {
   }
 
   public void set(int n1, int n2, float x, float y, float vx, float vy, float sz = 0.5f, int c = 300) {
