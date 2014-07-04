@@ -31,7 +31,9 @@ public class Field {
   static const float EYE_POS_Y = -2.5f;
   static const float EYE_POS_Z = 15f;
   static Rand rand;
-  static ShaderProgram program;
+  static ShaderProgram fieldProgram;
+  static GLuint fieldVao;
+  static GLuint[2] fieldVbo;
   Screen screen;
   World world;
   GameManager gameManager;
@@ -69,6 +71,81 @@ public class Field {
     floorWall = new FloorWall;
     floorWall.setWorld(world);
     floorWall.init(null);
+
+    if (fieldProgram !is null) {
+      return;
+    }
+
+    fieldProgram = new ShaderProgram;
+    fieldProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform vec2 size;\n"
+      "uniform float xFactor;\n"
+      "uniform float yFactor;\n"
+      "\n"
+      "attribute float z;\n"
+      "attribute float color;\n"
+      "\n"
+      "varying float f_color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(size * vec2(xFactor, yFactor), z, 1);\n"
+      "  f_color = color;\n"
+      "}\n"
+    );
+    fieldProgram.setFragmentShader(
+      "uniform float brightness;\n"
+      "\n"
+      "varying float f_color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(vec3(f_color * brightness), 1);\n"
+      "}\n"
+    );
+    GLint zLoc = 0;
+    GLint colorLoc = 1;
+    fieldProgram.bindAttribLocation(zLoc, "z");
+    fieldProgram.bindAttribLocation(colorLoc, "color");
+    fieldProgram.link();
+    fieldProgram.use();
+
+    glGenBuffers(2, fieldVbo.ptr);
+    glGenVertexArrays(1, &fieldVao);
+
+    static const float[] Z = [
+       0,
+      -8
+    ];
+    static const float[] COLOR = [
+      1,
+      0.4f
+    ];
+
+    glBindVertexArray(fieldVao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, fieldVbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, Z.length * float.sizeof, Z.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(zLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(zLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, fieldVbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, COLOR.length * float.sizeof, COLOR.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(colorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(colorLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+
+  public void close() {
+    if (fieldProgram !is null) {
+      glDeleteVertexArrays(1, &fieldVao);
+      glDeleteBuffers(2, fieldVbo.ptr);
+      fieldProgram.close();
+      fieldProgram = null;
+    }
   }
 
   public void start() {
@@ -173,28 +250,37 @@ public class Field {
     }
     for (float w = 0.98f; w < 1.0f; w += 0.0033f)
       drawSquare(view, -_size.x * w, -_size.y * w, _size.x * w * 2, _size.y * w * 2, 0, 0.9f);
-    glBegin(GL_LINES);
+
+    fieldProgram.use();
+
+    fieldProgram.setUniform("projmat", view);
+    fieldProgram.setUniform("brightness", Screen.brightness);
+    fieldProgram.setUniform("size", _size);
+
+    glBindVertexArray(fieldVao);
+
     for (float x = -0.9f; x < 1.0f; x += 0.1f) {
-      Screen.setColor(1, 1, 1);
-      glVertex3f(_size.x * x, -_size.y, 0);
-      Screen.setColor(0.4f, 0.4f, 0.4f);
-      glVertex3f(_size.x * x, -_size.y, -8);
-      Screen.setColor(1, 1, 1);
-      glVertex3f(_size.x * x, _size.y, 0);
-      Screen.setColor(0.4f, 0.4f, 0.4f);
-      glVertex3f(_size.x * x, _size.y, -8);
+      fieldProgram.setUniform("xFactor", x);
+
+      fieldProgram.setUniform("yFactor", -1.);
+      glDrawArrays(GL_LINES, 0, 2);
+
+      fieldProgram.setUniform("yFactor", 1.);
+      glDrawArrays(GL_LINES, 0, 2);
     }
+
     for (float y = -1; y < 1.1f; y += 0.1f) {
-      Screen.setColor(1, 1, 1);
-      glVertex3f(-_size.x, _size.y * y, 0);
-      Screen.setColor(0.4f, 0.4f, 0.4f);
-      glVertex3f(-_size.x, _size.y * y, -8);
-      Screen.setColor(1, 1, 1);
-      glVertex3f(_size.x, _size.y * y, 0);
-      Screen.setColor(0.4f, 0.4f, 0.4f);
-      glVertex3f(_size.x, _size.y * y, -8);
+      fieldProgram.setUniform("yFactor", y);
+
+      fieldProgram.setUniform("xFactor", -1.);
+      glDrawArrays(GL_LINES, 0, 2);
+
+      fieldProgram.setUniform("xFactor", 1.);
+      glDrawArrays(GL_LINES, 0, 2);
     }
-    glEnd();
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 
   private void drawSquare(mat4 view, float x, float y, float w, float h, float z, float a) {
