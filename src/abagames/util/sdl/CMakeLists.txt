@@ -7,7 +7,6 @@ set(util_sdl_srcs
     screen.d
     screen3d.d
     sdlexception.d
-    shape.d
     sound.d
     texture.d
     twinstickpad.d)
