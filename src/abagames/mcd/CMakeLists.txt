@@ -38,8 +38,17 @@ set_target_properties(mcd
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
+set(resource_files)
+if (WIN32)
+    list(APPEND resource_files
+        "${CMAKE_SOURCE_DIR}/resource/mu-cade.def"
+        "${CMAKE_SOURCE_DIR}/resource/mu-cade.rc"
+        "${CMAKE_SOURCE_DIR}/resource/mu-cade.RES")
+endif ()
+
 add_executable(mu-cade
-    boot.d)
+    boot.d
+    ${resource_files})
 target_link_libraries(mu-cade
     mcd
     mcd_util
