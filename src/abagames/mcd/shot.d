@@ -39,9 +39,9 @@ public template ShotImpl() {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(_deg <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!_deg.isNaN);
     }
     assert(cnt >= 0);
   }

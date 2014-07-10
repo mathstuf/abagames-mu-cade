@@ -78,9 +78,9 @@ public abstract class ShapeBase: Shape {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(pos.z <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!pos.z.isNaN);
       assert(size.x >= 0);
       assert(size.y >= 0);
       assert(size.z >= 0);
@@ -397,9 +397,9 @@ public class LinePoint {
       assert(spectrumColorG >= 0 && spectrumColorG <= 1);
       assert(spectrumColorB >= 0 && spectrumColorB <= 1);
       for (int i = 0; i < posIdx; i++) {
-        assert(pos[i].x <>= 0);
-        assert(pos[i].y <>= 0);
-        assert(pos[i].z <>= 0);
+        assert(!pos[i].x.isNaN);
+        assert(!pos[i].y.isNaN);
+        assert(!pos[i].z.isNaN);
       }
     }
   }

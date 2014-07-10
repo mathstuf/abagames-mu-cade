@@ -85,8 +85,8 @@ public class Ship: OdeActor, BulletTarget {
       assert(_pos.x <  field.size.x * 100);
       assert(_pos.y > -field.size.y * 100);
       assert(_pos.y <  field.size.y * 100);
-      assert(_pos.z <>= 0);
-      assert(deg <>= 0);
+      assert(!_pos.z.isNaN);
+      assert(!deg.isNaN);
     }
   }
 
@@ -528,10 +528,10 @@ public class ShipTail: OdeActor {
 
   invariant() {
     if (_pos) {
-      assert(_pos.x <>= 0);
-      assert(_pos.y <>= 0);
-      assert(_pos.z <>= 0);
-      assert(deg <>= 0);
+      assert(!_pos.x.isNaN);
+      assert(!_pos.y.isNaN);
+      assert(!_pos.z.isNaN);
+      assert(!deg.isNaN);
       assert(size.x >= 0);
       assert(size.y >= 0);
       assert(size.z >= 0);

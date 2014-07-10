@@ -54,9 +54,9 @@ public class BulletActor: Actor {
 
   invariant() {
     if (bullet && bullet.pos) {
-      assert(bullet.pos.x <>= 0);
-      assert(bullet.pos.y <>= 0);
-      assert(bullet.deg <>= 0);
+      assert(!bullet.pos.x.isNaN);
+      assert(!bullet.pos.y.isNaN);
+      assert(!bullet.deg.isNaN);
     }
     assert(cnt >= 0);
   }
@@ -215,9 +215,9 @@ public class SimpleBullet: OdeActor {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(deg <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!deg.isNaN);
       assert(speed > 0 && speed < 10);
     }
   }

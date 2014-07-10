@@ -46,14 +46,14 @@ public class Enemy: OdeActor {
 
   invariant() {
     if (state && state.pos) {
-      assert(state.pos.x <>= 0);
-      assert(state.pos.y <>= 0);
-      assert(state.pos.z <>= 0);
+      assert(!state.pos.x.isNaN);
+      assert(!state.pos.y.isNaN);
+      assert(!state.pos.z.isNaN);
     }
     if (lastForce) {
-      assert(lastForce.x <>= 0);
-      assert(lastForce.y <>= 0);
-      assert(lastForce.z <>= 0);
+      assert(!lastForce.x.isNaN);
+      assert(!lastForce.y.isNaN);
+      assert(!lastForce.z.isNaN);
     }
   }
 
@@ -424,16 +424,16 @@ public class EnemyState {
   Field field;
 
   invariant() {
-    assert(pos.x <>= 0);
-    assert(pos.y <>= 0);
-    assert(pos.z <>= 0);
-    assert(fabs(linearVel[0]) <>= 0);
-    assert(fabs(linearVel[1]) <>= 0);
-    assert(fabs(linearVel[2]) <>= 0);
-    assert(fabs(angularVel[0]) <>= 0);
-    assert(fabs(angularVel[1]) <>= 0);
-    assert(fabs(angularVel[2]) <>= 0);
-    assert(deg <>= 0);
+    assert(!pos.x.isNaN);
+    assert(!pos.y.isNaN);
+    assert(!pos.z.isNaN);
+    assert(!fabs(linearVel[0]).isNaN);
+    assert(!fabs(linearVel[1]).isNaN);
+    assert(!fabs(linearVel[2]).isNaN);
+    assert(!fabs(angularVel[0]).isNaN);
+    assert(!fabs(angularVel[1]).isNaN);
+    assert(!fabs(angularVel[2]).isNaN);
+    assert(!deg.isNaN);
     if (!sizeScale.isNull) {
       assert(sizeScale.x > 0);
       assert(sizeScale.y > 0);

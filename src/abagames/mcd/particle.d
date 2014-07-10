@@ -37,14 +37,14 @@ public class Particle: Actor {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(pos.z <>= 0);
-      assert(vel.x <>= 0);
-      assert(vel.y <>= 0);
-      assert(vel.z <>= 0);
-      assert(deg <>= 0);
-      assert(md <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!pos.z.isNaN);
+      assert(!vel.x.isNaN);
+      assert(!vel.y.isNaN);
+      assert(!vel.z.isNaN);
+      assert(!deg.isNaN);
+      assert(!md.isNaN);
       assert(size > 0 && size < 10);
       assert(r >= 0 && r <= 1);
       assert(g >= 0 && g <= 1);
@@ -173,21 +173,21 @@ public class ConnectedParticle: Actor {
 
   invariant() {
     if (_pos) {
-      assert(_pos.x <>= 0);
-      assert(_pos.y <>= 0);
-      assert(_pos.z <>= 0);
-      assert(_vel.x <>= 0);
-      assert(_vel.y <>= 0);
-      assert(_vel.z <>= 0);
+      assert(!_pos.x.isNaN);
+      assert(!_pos.y.isNaN);
+      assert(!_pos.z.isNaN);
+      assert(!_vel.x.isNaN);
+      assert(!_vel.y.isNaN);
+      assert(!_vel.z.isNaN);
       assert(r >= 0 && r <= 1);
       assert(g >= 0 && g <= 1);
       assert(b >= 0 && b <= 1);
-      assert(baseLength <>= 0);
+      assert(!baseLength.isNaN);
     }
     if (prevParticle && prevParticle._exists) {
-      assert(prevParticle._pos.x <>= 0);
-      assert(prevParticle._pos.y <>= 0);
-      assert(prevParticle._pos.z <>= 0);
+      assert(!prevParticle._pos.x.isNaN);
+      assert(!prevParticle._pos.y.isNaN);
+      assert(!prevParticle._pos.z.isNaN);
     }
   }
 
@@ -360,14 +360,14 @@ public class TailParticle: Actor {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(pos.z <>= 0);
-      assert(vel.x <>= 0);
-      assert(vel.y <>= 0);
-      assert(vel.z <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!pos.z.isNaN);
+      assert(!vel.x.isNaN);
+      assert(!vel.y.isNaN);
+      assert(!vel.z.isNaN);
       assert(size > 0 && size < 10);
-      assert(deg <>= 0);
+      assert(!deg.isNaN);
       assert(r >= 0 && r <= 1);
       assert(g >= 0 && g <= 1);
       assert(b >= 0 && b <= 1);
@@ -485,12 +485,12 @@ public class StarParticle: Actor {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(pos.z <>= 0);
-      assert(vel.x <>= 0);
-      assert(vel.y <>= 0);
-      assert(vel.z <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!pos.z.isNaN);
+      assert(!vel.x.isNaN);
+      assert(!vel.y.isNaN);
+      assert(!vel.z.isNaN);
       assert(size > 0 && size < 10);
     }
   }
@@ -544,10 +544,10 @@ public class NumIndicator: Actor {
 
   invariant() {
     if (pos) {
-      assert(pos.x <>= 0);
-      assert(pos.y <>= 0);
-      assert(vel.x <>= 0);
-      assert(vel.y <>= 0);
+      assert(!pos.x.isNaN);
+      assert(!pos.y.isNaN);
+      assert(!vel.x.isNaN);
+      assert(!vel.y.isNaN);
       assert(size > 0 && size < 10);
     }
   }

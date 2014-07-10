@@ -65,9 +65,9 @@ public class TwinStickPad: Input {
       } else {
         ry = -ry;
         float rd = atan2(cast(float) rx, cast(float) ry) * reverse + rotate;
-        assert(rd <>= 0);
+        assert(!rd.isNaN);
         float rl = sqrt(cast(float) rx * rx + cast(float) ry * ry);
-        assert(rl <>= 0);
+        assert(!rl.isNaN);
         state.right.x = adjustAxis(cast(int) (sin(rd) * rl));
         state.right.y = adjustAxis(cast(int) (cos(rd) * rl));
       }
