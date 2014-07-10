@@ -7,6 +7,12 @@ set(CMAKE_D_FLAGS
 
 project(mu-cade D)
 
+option(MUCADE_INSTALL "Whether to build an installable Mu-cade or not" OFF)
+if (MUCADE_INSTALL)
+    set(CMAKE_D_FLAGS
+        "${CMAKE_D_FLAGS} ${CMAKE_D_VERSION_FLAG}MucadeInstall")
+endif ()
+
 get_filename_component(CMAKE_SYSTEM_ROOT "${CMAKE_D_COMPILER}" DIRECTORY)
 get_filename_component(CMAKE_SYSTEM_ROOT "${CMAKE_SYSTEM_ROOT}" DIRECTORY)
 

@@ -8,6 +8,7 @@ module abagames.util.sdl.texture;
 private import std.string;
 private import derelict.sdl2.sdl;
 private import abagames.util.support.gl;
+private import abagames.util.support.paths;
 private import abagames.util.sdl.sdlexception;
 
 /**
@@ -27,10 +28,11 @@ public class Texture {
     if (name in surface) {
       return surface[name];
     } else {
-      string fileName = imagesDir ~ name;
-      SDL_Surface *s = SDL_LoadBMP(std.string.toStringz(fileName));
+      string path = assetStoragePath();
+      path ~= "/" ~ imagesDir ~ name;
+      SDL_Surface *s = SDL_LoadBMP(std.string.toStringz(path));
       if (!s)
-        throw new SDLInitFailedException("Unable to load: " ~ fileName);
+        throw new SDLInitFailedException("Unable to load: " ~ path);
       SDL_PixelFormat format;
       format.palette = null;
       format.BitsPerPixel = 32;

@@ -13,4 +13,5 @@ find_package(Derelict REQUIRED
         util)
 include_directories(SYSTEM "${BULLETML_INCLUDE_DIR}")
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 add_subdirectory(abagames)

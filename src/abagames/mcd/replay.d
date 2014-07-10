@@ -6,6 +6,7 @@
 module abagames.mcd.replay;
 
 private import std.stream;
+private import abagames.util.support.paths;
 private import abagames.util.sdl.recordableinput;
 private import abagames.util.sdl.twinstickpad;
 private import abagames.mcd.gamemanager;
@@ -25,7 +26,10 @@ public class ReplayData {
 
   public void save(string fileName) {
     scope File fd = new File;
-    fd.create(dir ~ "/" ~ fileName);
+    string path = dataStoragePath();
+    ensureDir(path);
+    path ~= "/" ~ fileName;
+    fd.create(path);
     fd.write(VERSION_NUM);
     fd.write(seed);
     fd.write(score);
@@ -36,7 +40,10 @@ public class ReplayData {
 
   public void load(string fileName) {
     scope File fd = new File;
-    fd.open(dir ~ "/" ~ fileName);
+    string path = dataStoragePath();
+    ensureDir(path);
+    path ~= "/" ~ fileName;
+    fd.open(path);
     int ver;
     fd.read(ver);
     if (ver != VERSION_NUM)
