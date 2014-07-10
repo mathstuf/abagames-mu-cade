@@ -1,9 +1,14 @@
+set(gl_impl opengl3)
+if (MUCADE_ANDROID)
+    set(gl_impl gles)
+endif ()
+
 find_package(bulletml REQUIRED)
 find_package(GL3N REQUIRED)
 find_package(Derelict REQUIRED
     COMPONENTS
         ode
-        opengl3
+        ${gl_impl}
         sdl2
         util)
 include_directories(SYSTEM "${BULLETML_INCLUDE_DIR}")

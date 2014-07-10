@@ -7,12 +7,12 @@ module abagames.mcd.shot;
 
 private import std.math;
 private import std.string;
-private import derelict.opengl3.gl;
 private import derelict.ode.ode;
 private import gl3n.linalg;
 private import abagames.util.actor;
 private import abagames.util.rand;
 private import abagames.util.math;
+private import abagames.util.support.gl;
 private import abagames.util.ode.world;
 private import abagames.util.ode.odeactor;
 private import abagames.mcd.field;

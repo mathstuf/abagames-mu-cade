@@ -6,11 +6,11 @@
 module abagames.mcd.field;
 
 private import std.math;
-private import derelict.opengl3.gl;
 private import derelict.ode.ode;
 private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.rand;
+private import abagames.util.support.gl;
 private import abagames.util.sdl.texture;
 private import abagames.util.ode.world;
 private import abagames.util.ode.odeactor;

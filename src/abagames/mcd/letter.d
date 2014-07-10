@@ -6,7 +6,7 @@
 module abagames.mcd.letter;
 
 private import std.math;
-private import derelict.opengl3.gl;
+private import abagames.util.support.gl;
 private import abagames.util.sdl.displaylist;
 private import abagames.mcd.screen;
 

@@ -7,7 +7,7 @@ module abagames.mcd.title;
 
 private import std.conv;
 private import std.string;
-private import derelict.opengl3.gl;
+private import abagames.util.support.gl;
 private import abagames.mcd.screen;
 private import abagames.mcd.field;
 private import abagames.mcd.letter;

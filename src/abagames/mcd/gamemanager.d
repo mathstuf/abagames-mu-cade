@@ -7,9 +7,9 @@ module abagames.mcd.gamemanager;
 
 private import std.math;
 private import derelict.sdl2.sdl;
-private import derelict.opengl3.gl;
 private import derelict.ode.ode;
 private import abagames.util.rand;
+private import abagames.util.support.gl;
 private import abagames.util.sdl.gamemanager;
 private import abagames.util.sdl.twinstickpad;
 private import abagames.util.sdl.recordableinput;

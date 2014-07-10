@@ -24,11 +24,12 @@ add_library(mcd STATIC
     ${mcd_srcs})
 target_link_libraries(mcd
     mcd_util
+    mcd_util_support
     mcd_util_bulletml
     mcd_util_ode
     mcd_util_sdl
     Derelict::ode
-    Derelict::opengl3
+    Derelict::${gl_impl}
     Derelict::sdl2
     Derelict::util)
 set_target_properties(mcd
@@ -42,6 +43,7 @@ add_executable(mu-cade
 target_link_libraries(mu-cade
     mcd
     mcd_util
+    mcd_util_support
     mcd_util_bulletml
     mcd_util_ode
     mcd_util_sdl)

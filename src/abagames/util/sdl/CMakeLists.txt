@@ -15,7 +15,8 @@ add_library(mcd_util_sdl STATIC
     ${util_sdl_srcs})
 target_link_libraries(mcd_util_sdl
     mcd_util
-    Derelict::opengl3
+    mcd_util_support
+    Derelict::${gl_impl}
     Derelict::sdl2
     Derelict::util)
 set_target_properties(mcd_util_sdl

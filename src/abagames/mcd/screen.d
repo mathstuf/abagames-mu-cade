@@ -5,7 +5,7 @@
  */
 module abagames.mcd.screen;
 
-private import derelict.opengl3.gl;
+private import abagames.util.support.gl;
 private import abagames.util.sdl.screen3d;
 private import abagames.mcd.field;
 

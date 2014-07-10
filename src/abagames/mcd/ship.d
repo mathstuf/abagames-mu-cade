@@ -7,11 +7,11 @@ module abagames.mcd.ship;
 
 private import std.math;
 private import std.typecons;
-private import derelict.opengl3.gl;
 private import derelict.ode.ode;
 private import gl3n.linalg;
 private import abagames.util.rand;
 private import abagames.util.math;
+private import abagames.util.support.gl;
 private import abagames.util.sdl.twinstickpad;
 private import abagames.util.sdl.recordableinput;
 private import abagames.util.ode.world;

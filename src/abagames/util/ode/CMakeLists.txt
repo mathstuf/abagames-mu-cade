@@ -6,6 +6,7 @@ add_library(mcd_util_ode STATIC
     ${util_ode_srcs})
 target_link_libraries(mcd_util_ode
     mcd_util
+    mcd_util_support
     Derelict::ode
     Derelict::util)
 set_target_properties(mcd_util_ode
