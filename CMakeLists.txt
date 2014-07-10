@@ -24,3 +24,14 @@ get_filename_component(CMAKE_SYSTEM_ROOT "${CMAKE_SYSTEM_ROOT}" DIRECTORY)
 include_directories(SYSTEM "${CMAKE_SYSTEM_ROOT}/include/d")
 
 add_subdirectory(src)
+
+if (WIN32)
+    set(asset_suffix "")
+else ()
+    set(asset_suffix "/mu-cade")
+endif ()
+
+install(
+    DIRECTORY   "barrage" "images" "sounds"
+    DESTINATION "share${asset_suffix}"
+    COMPONENT   runtime)
