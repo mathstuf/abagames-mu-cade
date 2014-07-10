@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=μ-cade
+GenericName=Smashup waggly shmup
+TryExec=mu-cade
+Exec=mu-cade
+Terminal=false
+Type=Application
+Icon=mu-cade
+NoDisplay=true
+Categories=Game;

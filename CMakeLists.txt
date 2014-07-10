@@ -35,3 +35,16 @@ install(
     DIRECTORY   "barrage" "images" "sounds"
     DESTINATION "share${asset_suffix}"
     COMPONENT   runtime)
+
+if (WIN32)
+    # Nothing needed for the icon.
+elseif (UNIX)
+    install(
+        FILES       "resource/mu-cade.desktop"
+        DESTINATION "share/applications"
+        COMPONENT   runtime)
+    install(
+        FILES       "resource/mu-cade.png"
+        DESTINATION "share/icons/locolor/32x32"
+        COMPONENT   runtime)
+endif ()
