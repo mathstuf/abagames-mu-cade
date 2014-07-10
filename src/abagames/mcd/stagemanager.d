@@ -68,7 +68,7 @@ public class StageManager {
     TailParticle.setRandSeed(randSeed);
     Field.setRandSeed(randSeed);
     SoundManager.setRandSeed(randSeed);
-    dRandSetSeed(randSeed);
+    dRandSetSeed(cast(uint) randSeed);
     clearAppearances();
     cnt = 0;
     rankDownCnt = 0;
