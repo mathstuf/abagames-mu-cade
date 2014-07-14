@@ -34,6 +34,9 @@ public class Field {
   static ShaderProgram fieldProgram;
   static GLuint fieldVao;
   static GLuint[2] fieldVbo;
+  static ShaderProgram letterProgram;
+  static GLuint letterVao;
+  static GLuint[2] letterVbo;
   Screen screen;
   World world;
   GameManager gameManager;
@@ -135,6 +138,74 @@ public class Field {
     glVertexAttribPointer(colorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(colorLoc);
 
+    letterProgram = new ShaderProgram;
+    letterProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform vec2 pos;\n"
+      "uniform float width;\n"
+      "\n"
+      "attribute vec2 factor;\n"
+      "attribute vec2 tex;\n"
+      "\n"
+      "varying vec2 f_tc;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(pos + factor * width, 0, 1);\n"
+      "  f_tc = tex;\n"
+      "}\n"
+    );
+    letterProgram.setFragmentShader(
+      "uniform sampler2D sampler;\n"
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "varying vec2 f_tc;\n"
+      "\n"
+      "void main() {\n"
+      "  vec4 texColor = texture2D(sampler, f_tc);\n"
+      "  vec4 color4 = vec4(color * vec3(brightness), 1);\n"
+      "  gl_FragColor = texColor * color4;\n"
+      "}\n"
+    );
+    GLint factorLoc = 0;
+    GLint texLoc = 1;
+    letterProgram.bindAttribLocation(factorLoc, "factor");
+    letterProgram.bindAttribLocation(texLoc, "tex");
+    letterProgram.link();
+    letterProgram.use();
+
+    letterProgram.setUniform("sampler", 0);
+
+    glGenBuffers(2, letterVbo.ptr);
+    glGenVertexArrays(1, &letterVao);
+
+    static const float[] FACTOR = [
+      -0.5f, -0.5f,
+       0.5f, -0.5f,
+       0.5f,  0.5f,
+      -0.5f,  0.5f
+    ];
+    static const float[] TEX = [
+      0, 0,
+      1, 0,
+      1, 1,
+      0, 1
+    ];
+
+    glBindVertexArray(letterVao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, letterVbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, FACTOR.length * float.sizeof, FACTOR.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(factorLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(factorLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, letterVbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, TEX.length * float.sizeof, TEX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(texLoc);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
   }
@@ -145,6 +216,11 @@ public class Field {
       glDeleteBuffers(2, fieldVbo.ptr);
       fieldProgram.close();
       fieldProgram = null;
+
+      glDeleteVertexArrays(1, &letterVao);
+      glDeleteBuffers(2, letterVbo.ptr);
+      letterProgram.close();
+      letterProgram = null;
     }
   }
 
@@ -328,44 +404,63 @@ public class Field {
       glVertex3f(x1 + ox1, y1 + oy1, 0);
     }
     glEnd();
-    glEnable(GL_TEXTURE_2D);
+
     float x = 285, y = 465;
     float lsz = 26, lof = 20;
+
+    drawLogo(view, x, y, lsz, lof);
+
+    viewPerspective();
+  }
+
+  public void drawLogo(mat4 view, float x, float y, float lsz, float lof, bool drawOutline = true) {
+    glEnable(GL_TEXTURE_2D);
+
+    letterProgram.use();
+
+    letterProgram.setUniform("projmat", view);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(letterVao);
+
     for (int i = 0; i < 5; i++) {
-      glBlendFunc(GL_DST_COLOR,GL_ZERO);
-      Screen.setColorForced(1, 1, 1);
+      letterProgram.setUniform("brightness", 1.);
+      letterProgram.setUniform("color", 1, 1, 1);
       _titleTexture.bindMask(i);
-      drawLetter(view, i, x, y, lsz);
+
+      glBlendFunc(GL_DST_COLOR, GL_ZERO);
+      drawLetter(x, y, lsz);
+
       glBlendFunc(GL_ONE, GL_ONE);
-      Screen.setColor(1, 0, 0);
+      letterProgram.setUniform("brightness", Screen.brightness);
       _titleTexture.bind(i);
-      drawLetter(view, i, x, y, lsz);
-      glBlendFunc(GL_DST_COLOR,GL_ZERO);
-      glBlendFunc(GL_ONE, GL_ONE);
-      Screen.setColor(1, 1, 1);
-      _titleTexture.bind(i);
-      drawLetter(view, i, x, y, lsz);
+
+      if (drawOutline) {
+        letterProgram.setUniform("color", 1, 0, 0);
+        drawLetter(x, y, lsz);
+      }
+
+      letterProgram.setUniform("color", 1, 1, 1);
+      drawLetter(x, y, lsz);
+
       if (i == 0)
         x += lof * 1.0f;
       else
         x += lof * 0.9f;
     }
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glDisable(GL_TEXTURE_2D);
-    viewPerspective();
   }
 
-  public void drawLetter(mat4 view, int i, float cx, float cy, float width) {
-    glBegin(GL_TRIANGLE_FAN);
-    glTexCoord2f(0, 0);
-    glVertex3f(cx - width / 2, cy - width / 2, 0);
-    glTexCoord2f(1, 0);
-    glVertex3f(cx + width / 2, cy - width / 2, 0);
-    glTexCoord2f(1, 1);
-    glVertex3f(cx + width / 2, cy + width / 2, 0);
-    glTexCoord2f(0, 1);
-    glVertex3f(cx - width / 2, cy + width / 2, 0);
-    glEnd();
+  public void drawLetter(float cx, float cy, float width) {
+    letterProgram.setUniform("pos", cx, cy);
+    letterProgram.setUniform("width", width);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 
   public mat4 fixedOrthoView() {
@@ -404,10 +499,6 @@ public class Field {
 
   public const(vec2) size() const {
     return _size;
-  }
-
-  public Texture titleTexture() {
-    return _titleTexture;
   }
 }
 
