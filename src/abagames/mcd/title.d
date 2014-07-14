@@ -40,25 +40,11 @@ public class TitleManager {
   }
 
   public void draw(mat4 view) {
-    glEnable(GL_TEXTURE_2D);
     float x = 250, y = 50;
     float lsz = 50, lof = 40;
-    for (int i = 0; i < 5; i++) {
-      glBlendFunc(GL_DST_COLOR,GL_ZERO);
-      Screen.setColorForced(1, 1, 1);
-      field.titleTexture.bindMask(i);
-      field.drawLetter(view, i, x, y, lsz);
-      glBlendFunc(GL_ONE, GL_ONE);
-      Screen.setColor(1, 1, 1);
-      field.titleTexture.bind(i);
-      field.drawLetter(view, i, x, y, lsz);
-      if (i == 0)
-        x += lof * 1.0f;
-      else
-        x += lof * 0.9f;
-    }
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glDisable(GL_TEXTURE_2D);
+
+    field.drawLogo(view, x, y, lsz, lof, false);
+
     if ((cnt % 120) < 60)
       Letter.drawString(view, "PUSH SHOT BUTTON TO START", 200, 430, 5);
     if ((cnt % 3600) == 0)
