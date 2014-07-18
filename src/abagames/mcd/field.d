@@ -37,6 +37,9 @@ public class Field {
   static ShaderProgram letterProgram;
   static GLuint letterVao;
   static GLuint[2] letterVbo;
+  static ShaderProgram overlayProgram;
+  static GLuint overlayVao;
+  static GLuint[3] overlayVbo;
   Screen screen;
   World world;
   GameManager gameManager;
@@ -206,6 +209,126 @@ public class Field {
     glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(texLoc);
 
+    overlayProgram = new ShaderProgram;
+    overlayProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform float factor;\n"
+      "\n"
+      "attribute vec2 pos;\n"
+      "attribute vec2 diff;\n"
+      "attribute float mult;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(pos + factor * mult * diff, 0, 1);\n"
+      "}\n"
+    );
+    overlayProgram.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint posLoc = 0;
+    GLint diffLoc = 1;
+    GLint multLoc = 2;
+    overlayProgram.bindAttribLocation(posLoc, "pos");
+    overlayProgram.bindAttribLocation(diffLoc, "diff");
+    overlayProgram.bindAttribLocation(multLoc, "mult");
+    overlayProgram.link();
+    overlayProgram.use();
+
+    glGenBuffers(3, overlayVbo.ptr);
+    glGenVertexArrays(1, &overlayVao);
+
+    static const float[] VTX = [
+      370, 466,
+      370, 466,
+      615, 466,
+      615, 466,
+      631, 450,
+      631, 450,
+      631,  30,
+      631,  30,
+      615,  14,
+      615,  14,
+       25,  14,
+       25,  14,
+        9,  30,
+        9,  30,
+        9, 450,
+        9, 450,
+       25, 466,
+       25, 466,
+      270, 466,
+      270, 466
+    ];
+    static const float[] DIFF = [
+       0,  7,
+       0,  7,
+       0,  7,
+       0,  7,
+       7,  0,
+       7,  0,
+       7,  0,
+       7,  0,
+       0, -7,
+       0, -7,
+       0, -7,
+       0, -7,
+      -7,  0,
+      -7,  0,
+      -7,  0,
+      -7,  0,
+       0,  7,
+       0,  7,
+       0,  7,
+       0,  7
+    ];
+    static const float[] MULT = [
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1,
+      -1,
+       1
+    ];
+
+    glBindVertexArray(overlayVao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, DIFF.length * float.sizeof, DIFF.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(diffLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(diffLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo[2]);
+    glBufferData(GL_ARRAY_BUFFER, MULT.length * float.sizeof, MULT.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(multLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(multLoc);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
   }
@@ -221,6 +344,11 @@ public class Field {
       glDeleteBuffers(2, letterVbo.ptr);
       letterProgram.close();
       letterProgram = null;
+
+      glDeleteVertexArrays(1, &overlayVao);
+      glDeleteBuffers(3, overlayVbo.ptr);
+      overlayProgram.close();
+      overlayProgram = null;
     }
   }
 
@@ -366,44 +494,34 @@ public class Field {
     Screen.drawLine(view, x, y + h, z, x, y, z, a);
   }
 
-  static const float[][] OVERLAY_BAR_POS = [
-    [370, 466, 0, 7], [615, 466, 0, 7],
-    [631, 450, 7, 0], [631, 30, 7, 0],
-    [615, 14, 0, -7], [25, 14, 0, -7],
-    [9, 30, -7, 0], [9, 450, -7, 0],
-    [25, 466, 0, 7], [270, 466, 0, 7],
-  ];
-
   public void drawOverlay(mat4 view) {
     viewOrthoFixed();
     gameManager.drawState(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBegin(GL_QUADS);
-    for (int i = 1; i < OVERLAY_BAR_POS.length; i++) {
-      float x1 = OVERLAY_BAR_POS[i - 1][0];
-      float y1 = OVERLAY_BAR_POS[i - 1][1];
-      float ox1 = OVERLAY_BAR_POS[i - 1][2];
-      float oy1 = OVERLAY_BAR_POS[i - 1][3];
-      float x2 = OVERLAY_BAR_POS[i][0];
-      float y2 = OVERLAY_BAR_POS[i][1];
-      float ox2 = OVERLAY_BAR_POS[i][2];
-      float oy2 = OVERLAY_BAR_POS[i][3];
-      Screen.setColor(1, 0, 0);
-      glVertex3f(x1 - ox1, y1 - oy1, 0);
-      glVertex3f(x2 - ox2, y2 - oy2, 0);
-      glVertex3f(x2 + ox2, y2 + oy2, 0);
-      glVertex3f(x1 + ox1, y1 + oy1, 0);
-      ox1 *= 0.5f;
-      oy1 *= 0.5f;
-      ox2 *= 0.5f;
-      oy2 *= 0.5f;
-      Screen.setColor(1, 1, 1);
-      glVertex3f(x1 - ox1, y1 - oy1, 0);
-      glVertex3f(x2 - ox2, y2 - oy2, 0);
-      glVertex3f(x2 + ox2, y2 + oy2, 0);
-      glVertex3f(x1 + ox1, y1 + oy1, 0);
+
+    overlayProgram.use();
+
+    overlayProgram.setUniform("projmat", view);
+    overlayProgram.setUniform("brightness", Screen.brightness);
+
+    glBindVertexArray(overlayVao);
+
+    for (int i = 0; i < 9; i++) {
+      static GLuint[4] ELEM;
+
+      ELEM[0] = 2 * i + 0;
+      ELEM[1] = 2 * i + 2;
+      ELEM[2] = 2 * i + 3;
+      ELEM[3] = 2 * i + 1;
+
+      overlayProgram.setUniform("color", 1, 0, 0);
+      overlayProgram.setUniform("factor", 1f);
+      glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, ELEM.ptr);
+
+      overlayProgram.setUniform("color", 1, 1, 1);
+      overlayProgram.setUniform("factor", 0.5f);
+      glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, ELEM.ptr);
     }
-    glEnd();
 
     float x = 285, y = 465;
     float lsz = 26, lof = 20;
