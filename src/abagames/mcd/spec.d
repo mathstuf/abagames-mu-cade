@@ -219,12 +219,7 @@ public template CentMoveImpl() {
       model.translate(state.pos.x, state.pos.y, state.pos.z);
       subShape.setModelMatrix(model);
 
-      glPushMatrix();
-      Screen.glTranslate(state.pos);
-      glMultMatrixf(state.rot.transposed.value_ptr);
-      glScalef(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
       subShape.draw(view);
-      glPopMatrix();
     }
   }
 }

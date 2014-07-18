@@ -20,6 +20,7 @@ private import abagames.mcd.field;
 private import abagames.mcd.screen;
 private import abagames.mcd.enemy;
 private import abagames.mcd.spec;
+private import abagames.mcd.shape;
 private import abagames.mcd.ship;
 private import abagames.mcd.shot;
 private import abagames.mcd.particle;
@@ -216,6 +217,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     numIndicators.close();
     SoundManager.haltBgm();
     Letter.close();
+    EyeShape.close();
   }
 
   public override void move() {
