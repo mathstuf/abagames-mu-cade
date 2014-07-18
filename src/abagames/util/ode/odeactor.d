@@ -8,7 +8,6 @@ module abagames.util.ode.odeactor;
 private import std.math;
 private import derelict.ode.ode;
 private import gl3n.linalg;
-private import abagames.util.support.gl;
 private import abagames.util.actor;
 private import abagames.util.ode.world;
 
@@ -295,19 +294,19 @@ public class OdeActor: Actor {
     matrix[3][3]= 1;
   }
 
-  public void setRot(GLdouble[] rot) {
+  public void setRot(mat4 rot) {
     dReal[12] matrix;
-    matrix[0]= rot[0];
-    matrix[1]= rot[4];
-    matrix[2]= rot[8];
+    matrix[0]= rot[0][0];
+    matrix[1]= rot[1][0];
+    matrix[2]= rot[2][0];
     matrix[3]= 0;
-    matrix[4]= rot[1];
-    matrix[5]= rot[5];
-    matrix[6]= rot[9];
+    matrix[4]= rot[0][1];
+    matrix[5]= rot[1][1];
+    matrix[6]= rot[2][1];
     matrix[7]= 0;
-    matrix[8]= rot[2];
-    matrix[9]= rot[6];
-    matrix[10]= rot[10];
+    matrix[8]= rot[0][2];
+    matrix[9]= rot[1][2];
+    matrix[10]= rot[2][2];
     matrix[11]= 0;
     dBodySetRotation(_bodyId, matrix);
   }
