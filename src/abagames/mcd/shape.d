@@ -451,11 +451,7 @@ public class LinePoint {
   }
 
   public void record(float ox, float oy, float oz) {
-    float tx, ty, tz;
-    calcTranslatedPos(tx, ty, tz, ox, oy, oz);
-    pos[posIdx].x = tx;
-    pos[posIdx].y = ty;
-    pos[posIdx].z = tz;
+    pos[posIdx] = calcTranslatedPos(ox, oy, oz);
     posIdx++;
   }
 
@@ -510,19 +506,18 @@ public class LinePoint {
   }
 
   public void vertex(float ox, float oy, float oz) {
-    float tx, ty, tz;
-    calcTranslatedPos(tx, ty, tz, ox, oy, oz);
-    glVertex3f(tx, ty, tz);
+    vec3 t = calcTranslatedPos(ox, oy, oz);
+    glVertex3f(t.x, t.y, t.z);
   }
 
-  private void calcTranslatedPos(ref float tx, ref float ty, ref float tz,
-                                 float ox, float oy, float oz) {
+  private vec3 calcTranslatedPos(float ox, float oy, float oz) {
     float x = basePos.x + baseSize.x / 2 * ox;
     float y = basePos.y + baseSize.y / 2 * oy;
     float z = basePos.z + baseSize.z / 2 * oz;
-    tx = m[0] * x + m[4] * y + m[8] * z + m[12];
-    ty = m[1] * x + m[5] * y + m[9] * z + m[13];
-    tz = m[2] * x + m[6] * y + m[10] * z + m[14];
+    float tx = m[0] * x + m[4] * y + m[8] * z + m[12];
+    float ty = m[1] * x + m[5] * y + m[9] * z + m[13];
+    float tz = m[2] * x + m[6] * y + m[10] * z + m[14];
+    return vec3(tx, ty, tz);
   }
 
   public bool setShadowColor() {
