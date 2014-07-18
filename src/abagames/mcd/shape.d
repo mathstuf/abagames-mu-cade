@@ -708,30 +708,101 @@ public class EyeShape: Drawable {
 }
 
 public class CenterShape: Drawable {
+  private:
+   static ShaderProgram program;
+   static GLuint vao;
+   static GLuint vbo;
+
+   public this() {
+     if (program !is null) {
+       return;
+     }
+
+     program = new ShaderProgram;
+     program.setVertexShader(
+       "uniform mat4 projmat;\n"
+       "uniform mat4 modelmat;\n"
+       "uniform vec2 factor;\n"
+       "\n"
+       "attribute vec2 pos;\n"
+       "\n"
+       "void main() {\n"
+       "  gl_Position = projmat * modelmat * vec4(pos * factor, 0, 1);\n"
+       "}\n"
+     );
+     program.setFragmentShader(
+       "uniform float brightness;\n"
+       "uniform vec3 color;\n"
+       "\n"
+       "void main() {\n"
+       "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+       "}\n"
+     );
+     GLint posLoc = 0;
+     program.bindAttribLocation(posLoc, "pos");
+     program.link();
+     program.use();
+
+     glGenBuffers(1, &vbo);
+     glGenVertexArrays(1, &vao);
+
+     static const float[] VTX = [
+       -1, -1,
+        1, -1,
+        1,  1,
+       -1,  1,
+
+       0.6f, 0.6f,
+       0.3f, 0.6f,
+       0.3f, 0.3f,
+       0.6f, 0.3f
+     ];
+
+     glBindVertexArray(vao);
+
+     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+     glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+     glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+     glEnableVertexAttribArray(posLoc);
+
+     glBindBuffer(GL_ARRAY_BUFFER, 0);
+     glBindVertexArray(0);
+   }
+
+  public static void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
+  }
+
   public void setModelMatrix(mat4 model) {
-    // TODO: Implement.
+    program.use();
+    program.setUniform("modelmat", model);
+    glUseProgram(0);
   }
 
   public void draw(mat4 view) {
-    Screen.setColor(0.6f, 1.0f, 0.5f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-0.2, -0.2, 0);
-    glVertex3f( 0.2, -0.2, 0);
-    glVertex3f( 0.2,  0.2, 0);
-    glVertex3f(-0.2,  0.2, 0);
-    glEnd();
-    Screen.setColor(0.4f, 0.8f, 0.2f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-0.6, 0.6, 0);
-    glVertex3f(-0.3, 0.6, 0);
-    glVertex3f(-0.3, 0.3, 0);
-    glVertex3f(-0.6, 0.3, 0);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0.6, 0.6, 0);
-    glVertex3f(0.3, 0.6, 0);
-    glVertex3f(0.3, 0.3, 0);
-    glVertex3f(0.6, 0.3, 0);
-    glEnd();
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("brightness", Screen.brightness);
+
+    glBindVertexArray(vao);
+
+    program.setUniform("color", 0.6f, 1.0f, 0.5f);
+    program.setUniform("factor", 0.2f, 0.2f);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    program.setUniform("color", 0.4f, 0.8f, 0.2f);
+
+    program.setUniform("factor", -1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+
+    program.setUniform("factor", 1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
   }
 }
