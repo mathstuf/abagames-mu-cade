@@ -1,5 +1,4 @@
 set(util_sdl_srcs
-    displaylist.d
     gamemanager.d
     input.d
     mainloop.d
