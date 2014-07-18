@@ -218,6 +218,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     SoundManager.haltBgm();
     Letter.close();
     EyeShape.close();
+    CenterShape.close();
   }
 
   public override void move() {
