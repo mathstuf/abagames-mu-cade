@@ -40,19 +40,27 @@ public class Screen3D: Screen, SizableScreen {
     }
     // Create an OpenGL screen.
     Uint32 videoFlags;
+    int winheight = _height;
+    int winwidth = _width;
     if (_windowMode) {
       videoFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
     } else {
+      winheight = 0;
+      winwidth = 0;
       videoFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
     _window = SDL_CreateWindow("",
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        _width, _height, videoFlags);
+        winwidth, winheight, videoFlags);
     if (_window == null) {
       throw new SDLInitFailedException
         ("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
     }
-    SDL_GL_CreateContext(_window);
+    SDL_Renderer* _renderer = SDL_CreateRenderer(_window, -1, 0);
+    SDL_RendererInfo info;
+    SDL_GetRendererInfo(_renderer, &info);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+    SDL_RenderSetLogicalSize(_renderer, _width, _height);
     // Reload GL now to get any features.
     DerelictGL.reload();
     glViewport(0, 0, width, height);
