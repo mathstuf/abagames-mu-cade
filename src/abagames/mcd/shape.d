@@ -11,6 +11,7 @@ private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.support.gl;
 private import abagames.util.sdl.displaylist;
+private import abagames.util.sdl.shaderprogram;
 private import abagames.util.ode.odeactor;
 private import abagames.util.ode.world;
 private import abagames.mcd.screen;
@@ -605,37 +606,104 @@ public interface Drawable {
 }
 
 public class EyeShape: Drawable {
+ private:
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
+
+  public this() {
+    if (program !is null) {
+      return;
+    }
+
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform mat4 modelmat;\n"
+      "uniform vec2 factor;\n"
+      "\n"
+      "attribute vec2 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * modelmat * vec4(pos * factor, 0, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint posLoc = 0;
+    program.bindAttribLocation(posLoc, "pos");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] VTX = [
+      0.5f, 0.5f,
+      0.3f, 0.5f,
+      0.3f, 0.3f,
+      0.5f, 0.3f
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+
+  public static void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
+  }
+
   public void setModelMatrix(mat4 model) {
-    // TODO: Implement.
+    program.use();
+    program.setUniform("modelmat", model);
+    glUseProgram(0);
   }
 
   public void draw(mat4 view) {
-    Screen.setColor(1.0f, 0, 0);
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(-0.5, 0.5, 0);
-    glVertex3f(-0.3, 0.5, 0);
-    glVertex3f(-0.3, 0.3, 0);
-    glVertex3f(-0.5, 0.3, 0);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(0.5, 0.5, 0);
-    glVertex3f(0.3, 0.5, 0);
-    glVertex3f(0.3, 0.3, 0);
-    glVertex3f(0.5, 0.3, 0);
-    glEnd();
-    Screen.setColor(0.8f, 0.4f, 0.4f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-0.5, 0.5, 0);
-    glVertex3f(-0.3, 0.5, 0);
-    glVertex3f(-0.3, 0.3, 0);
-    glVertex3f(-0.5, 0.3, 0);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0.5, 0.5, 0);
-    glVertex3f(0.3, 0.5, 0);
-    glVertex3f(0.3, 0.3, 0);
-    glVertex3f(0.5, 0.3, 0);
-    glEnd();
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("brightness", Screen.brightness);
+
+    glBindVertexArray(vao);
+
+    program.setUniform("color", 1.0f, 0, 0);
+
+    program.setUniform("factor", -1, 1);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    program.setUniform("factor", 1, 1);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    program.setUniform("color", 0.8f, 0.4f, 0.4f);
+
+    program.setUniform("factor", -1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    program.setUniform("factor", 1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 }
 
