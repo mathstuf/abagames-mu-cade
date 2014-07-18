@@ -130,10 +130,6 @@ public class Screen: Screen3D {
     glUseProgram(0);
   }
 
-  public static void setColorForced(float r, float g, float b, float a = 1) {
-    glColor4f(r, g ,b, a);
-  }
-
   public override mat4 screenResized() {
     mat4 view = super.screenResized();
     float lw = (cast(float) width / 640 + cast(float) height / 480) / 2;
