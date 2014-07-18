@@ -10,7 +10,6 @@ private import derelict.ode.ode;
 private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.support.gl;
-private import abagames.util.sdl.displaylist;
 private import abagames.util.sdl.shaderprogram;
 private import abagames.util.ode.odeactor;
 private import abagames.util.ode.world;
