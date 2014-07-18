@@ -17,6 +17,10 @@ version (Android) {
   public enum usingGLES = false;
 }
 
+private import gl3n.linalg;
+private import std.stdio;
+private import std.conv;
+
 public void loadGL() {
   version (Android) {
     DerelictEGL.load();
@@ -50,4 +54,17 @@ version (Android) {
   public void glDeleteVertexArrays(GLsizei n, GLuint* arrays) {
     glDeleteVertexArraysOES(n, arrays);
   }
+}
+
+public void checkMatrix(mat4 mat) {
+  mat4 glm;
+  mat4 glp;
+
+  glGetFloatv(GL_MODELVIEW_MATRIX, glm.value_ptr);
+  glGetFloatv(GL_PROJECTION_MATRIX, glp.value_ptr);
+  glm.transpose;
+  glp.transpose;
+
+  writeln("gl : " ~ to!string(glp * glm));
+  writeln("mat: " ~ to!string(mat));
 }
