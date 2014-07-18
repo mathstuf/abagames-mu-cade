@@ -27,10 +27,15 @@ public class Screen: Screen3D {
     glLineWidth(1);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glEnable(GL_BLEND);
-    glEnable(GL_LINE_SMOOTH);
+    static if (!usingGLES) {
+      // TODO: Implement in the shaders?
+      glEnable(GL_LINE_SMOOTH);
+    }
     glDisable(GL_TEXTURE_2D);
-    glDisable(GL_COLOR_MATERIAL);
-    glDisable(GL_LIGHTING);
+    static if (!usingGLES) {
+      glDisable(GL_COLOR_MATERIAL);
+      glDisable(GL_LIGHTING);
+    }
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     setClearColor(0, 0, 0, 1);
