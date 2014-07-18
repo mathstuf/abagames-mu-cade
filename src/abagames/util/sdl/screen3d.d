@@ -32,7 +32,7 @@ public class Screen3D: Screen, SizableScreen {
   public mat4 initSDL() {
     // Initialize Derelict.
     DerelictSDL2.load();
-    DerelictGL.load(); // We use deprecated features.
+    loadGL(); // We use deprecated features.
     // Initialize SDL.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
       throw new SDLInitFailedException(
@@ -62,7 +62,7 @@ public class Screen3D: Screen, SizableScreen {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     SDL_RenderSetLogicalSize(_renderer, _width, _height);
     // Reload GL now to get any features.
-    DerelictGL.reload();
+    reloadGL();
     glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     mat4 windowmat = resized(_width, _height);
