@@ -377,7 +377,7 @@ public class LinePoint {
   vec3[][] posHist;
   int posIdx, histIdx;
   vec3 basePos, baseSize;
-  GLfloat[16] m;
+  mat4 m;
   bool isFirstRecord;
   float spectrumColorR, spectrumColorG, spectrumColorB;
   float spectrumColorRTrg, spectrumColorGTrg, spectrumColorBTrg;
@@ -439,7 +439,7 @@ public class LinePoint {
 
   public void beginRecord(mat4 model) {
     posIdx = 0;
-    glGetFloatv(GL_MODELVIEW_MATRIX, m.ptr);
+    m = model;
   }
 
   public void setPos(vec3 p) {
@@ -511,13 +511,11 @@ public class LinePoint {
   }
 
   private vec3 calcTranslatedPos(float ox, float oy, float oz) {
-    float x = basePos.x + baseSize.x / 2 * ox;
-    float y = basePos.y + baseSize.y / 2 * oy;
-    float z = basePos.z + baseSize.z / 2 * oz;
-    float tx = m[0] * x + m[4] * y + m[8] * z + m[12];
-    float ty = m[1] * x + m[5] * y + m[9] * z + m[13];
-    float tz = m[2] * x + m[6] * y + m[10] * z + m[14];
-    return vec3(tx, ty, tz);
+    vec3 o = vec3(ox, oy, oz);
+    vec3 sz = vec3(baseSize.x * o.x, baseSize.y * o.y, baseSize.z * o.z);
+    vec3 tpos = basePos + sz * 0.5f;
+    vec4 trans = m * vec4(tpos, 1);
+    return trans.xyz;
   }
 
   public bool setShadowColor() {

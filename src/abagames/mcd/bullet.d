@@ -325,13 +325,9 @@ public class SimpleBullet: OdeActor {
     model.rotate(-deg, vec3(0, 0, 1));
     model.translate(pos.x, pos.y, 0);
 
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(deg * 180 / PI, 0, 0, 1);
     linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public void collapseIntoParticle() {

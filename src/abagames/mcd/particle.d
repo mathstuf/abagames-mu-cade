@@ -139,14 +139,10 @@ public class Particle: Actor {
     model.rotate(-deg, vec3(0, 0, 1));
     model.translate(pos.x, pos.y, pos.z);
 
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(deg * 180 / PI, 0, 0, 1);
     linePoint.beginRecord(model);
     linePoint.record(-1, 0, 0);
     linePoint.record( 1, 0, 0);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public override void draw(mat4 view) {
@@ -356,17 +352,12 @@ public class ConnectedParticle: Actor {
       model = model * rot;
     model.translate(_pos.x, _pos.y, _pos.z);
 
-    glPushMatrix();
-    Screen.glTranslate(_pos);
-    if (enableRotate)
-      glMultMatrixf(rot.transposed.value_ptr);
     linePoint.beginRecord(model);
     linePoint.record(0, 0, 0);
     linePoint.record((prevParticle.pos.x - _pos.x) * 2,
                      (prevParticle.pos.y - _pos.y) * 2,
                      (prevParticle.pos.z - _pos.z) * 2);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public override void draw(mat4 view) {
@@ -535,13 +526,9 @@ public class TailParticle: Actor {
     model.rotate(-deg, vec3(0, 0, 1));
     model.translate(pos.x, pos.y, pos.z);
 
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(deg * 180 / PI, 0, 0, 1);
     linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public override void draw(mat4 view) {
