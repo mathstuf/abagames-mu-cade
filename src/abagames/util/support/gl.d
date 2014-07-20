@@ -22,7 +22,7 @@ public void loadGL() {
     DerelictEGL.load();
     DerelictGLES2.load();
   } else {
-    DerelictGL3.load();
+    DerelictGL.load();
   }
 }
 
@@ -34,7 +34,7 @@ public void reloadGL() {
       throw new Exception("error: required GLES extension GL_OES_vertex_array_object not supported");
     }
   } else {
-    DerelictGL3.reload();
+    DerelictGL.reload();
   }
 }
 
