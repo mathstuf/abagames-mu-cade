@@ -17,6 +17,7 @@ private import std.conv;
  */
 public class ShaderProgram {
  private:
+  static GLuint lastProgram = 0;
   bool haveShader;
   GLuint vertexShader;
   GLuint fragmentShader;
@@ -98,7 +99,11 @@ public class ShaderProgram {
   }
 
   public void use() {
+    if (lastProgram == program) {
+      return;
+    }
     glUseProgram(program);
+    lastProgram = program;
   }
 
   public void bindAttribLocation(GLuint index, string name) {

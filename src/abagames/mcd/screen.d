@@ -132,7 +132,6 @@ public class Screen: Screen3D {
     glDrawArrays(GL_LINE_STRIP, 0, 3);
 
     glBindVertexArray(0);
-    glUseProgram(0);
   }
 
   public override mat4 screenResized() {

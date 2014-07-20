@@ -378,7 +378,6 @@ public class ConnectedParticle: Actor {
     glDrawArrays(GL_LINES, 0, 2);
 
     glBindVertexArray(0);
-    glUseProgram(0);
   }
 
   public vec3 pos() {
@@ -656,8 +655,6 @@ public class StarParticle: Actor {
     program.use();
 
     program.setUniform("color", color);
-
-    glUseProgram(0);
   }
 
   public override void draw(mat4 view) {
@@ -672,7 +669,6 @@ public class StarParticle: Actor {
     glDrawArrays(GL_LINES, 0, 2);
 
     glBindVertexArray(0);
-    glUseProgram(0);
   }
 }
 

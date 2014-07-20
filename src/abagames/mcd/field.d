@@ -484,7 +484,6 @@ public class Field {
     }
 
     glBindVertexArray(0);
-    glUseProgram(0);
   }
 
   private void drawSquare(mat4 view, float x, float y, float w, float h, float z, float a) {
@@ -568,7 +567,6 @@ public class Field {
     }
 
     glBindVertexArray(0);
-    glUseProgram(0);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glDisable(GL_TEXTURE_2D);

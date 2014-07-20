@@ -198,7 +198,6 @@ public class Square: ShapeBase {
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glBindVertexArray(0);
-    glUseProgram(0);
   }
 }
 
@@ -826,7 +825,6 @@ public class EyeShape: Drawable {
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glBindVertexArray(0);
-    glUseProgram(0);
   }
 }
 
