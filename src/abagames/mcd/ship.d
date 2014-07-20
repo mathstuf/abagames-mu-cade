@@ -459,9 +459,8 @@ public class Ship: OdeActor, BulletTarget {
     mat4 model = mat4.identity;
     model = model * rot;
     model.translate(_pos.x, _pos.y, _pos.z);
-    subShape.setModelMatrix(model);
 
-    subShape.draw(view);
+    subShape.draw(view, model);
   }
 
   public void drawLeft(mat4 view, float x, float y) {
@@ -469,7 +468,6 @@ public class Ship: OdeActor, BulletTarget {
     model.rotate(-PI, vec3(0, 0, 1));
     model.scale(15, 15, 15);
     model.translate(x, y, 0);
-    subShape.setModelMatrix(model);
 
     glPushMatrix();
     glTranslatef(x, y, 0);
@@ -484,7 +482,7 @@ public class Ship: OdeActor, BulletTarget {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     linePoint.draw(view);
 
-    subShape.draw(view);
+    subShape.draw(view, model);
   }
 
   public vec3 pos() {

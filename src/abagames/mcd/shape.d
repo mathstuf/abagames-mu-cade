@@ -567,8 +567,7 @@ public class LinePoint {
 }
 
 public interface Drawable {
-  public void setModelMatrix(mat4 model);
-  public void draw(mat4 view);
+  public void draw(mat4 view, mat4 model);
 }
 
 public class EyeShape: Drawable {
@@ -638,16 +637,11 @@ public class EyeShape: Drawable {
     }
   }
 
-  public void setModelMatrix(mat4 model) {
-    program.use();
-    program.setUniform("modelmat", model);
-    glUseProgram(0);
-  }
-
-  public void draw(mat4 view) {
+  public void draw(mat4 view, mat4 model) {
     program.use();
 
     program.setUniform("projmat", view);
+    program.setUniform("modelmat", model);
     program.setUniform("brightness", Screen.brightness);
 
     glBindVertexArray(vao);
@@ -745,16 +739,11 @@ public class CenterShape: Drawable {
     }
   }
 
-  public void setModelMatrix(mat4 model) {
-    program.use();
-    program.setUniform("modelmat", model);
-    glUseProgram(0);
-  }
-
-  public void draw(mat4 view) {
+  public void draw(mat4 view, mat4 model) {
     program.use();
 
     program.setUniform("projmat", view);
+    program.setUniform("modelmat", model);
     program.setUniform("brightness", Screen.brightness);
 
     glBindVertexArray(vao);

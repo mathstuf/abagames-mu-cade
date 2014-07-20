@@ -217,9 +217,8 @@ public template CentMoveImpl() {
       model.scale(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
       model = model * state.rot;
       model.translate(state.pos.x, state.pos.y, state.pos.z);
-      subShape.setModelMatrix(model);
 
-      subShape.draw(view);
+      subShape.draw(view, model);
     }
   }
 }
