@@ -128,12 +128,44 @@ public abstract class ShapeBase: Shape {
 
 public class Square: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float sx, float sy) {
     this.world = world;
     this.mass = mass;
     pos = vec3(px, py, 0);
     size = vec3(sx, sy, 1);
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] VTX = [
+      -1, -1, 0,
+       1, -1, 0,
+       1,  1, 0,
+      -1,  1, 0
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public this(World world, float mass, float px, float py, float pz,
@@ -158,27 +190,58 @@ public class Square: ShapeBase {
   }
 
   public override void drawShadow(mat4 view, LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_TRIANGLE_FAN);
-    lp.vertex(-1, -1, 0);
-    lp.vertex( 1, -1, 0);
-    lp.vertex( 1,  1, 0);
-    lp.vertex(-1,  1, 0);
-    glEnd();
+    }
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
   }
 }
 
 public class Sphere: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float rad) {
     this.world = world;
     this.mass = mass;
     pos = vec3(px, py, 0);
     size = vec3(rad, rad, rad);
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] VTX = [
+      -1, -1, 0,
+       1, -1, 0,
+       1,  1, 0,
+      -1,  1, 0
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public override void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
@@ -212,21 +275,19 @@ public class Sphere: ShapeBase {
   }
 
   public override void drawShadow(mat4 view, LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_TRIANGLE_FAN);
-    lp.vertex(-1, -1, 0);
-    lp.vertex( 1, -1, 0);
-    lp.vertex( 1,  1, 0);
-    lp.vertex(-1,  1, 0);
-    glEnd();
+    }
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 }
 
 public class Triangle: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float sx, float sy) {
     this.world = world;
@@ -234,6 +295,35 @@ public class Triangle: ShapeBase {
     pos = vec3(px, py, 0);
     size = vec3(sx, sy, 1);
     shapeBoxScale = 1;
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] VTX = [
+       0,  1, 0,
+       1, -1, 0,
+      -0, -1, 0
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public override void recordLinePoints(LinePoint lp) {
@@ -248,26 +338,80 @@ public class Triangle: ShapeBase {
   }
 
   public override void drawShadow(mat4 view, LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_TRIANGLE_FAN);
-    lp.vertex( 0,  1, 0);
-    lp.vertex( 1, -1, 0);
-    lp.vertex(-0, -1, 0);
-    glEnd();
+    }
+
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
   }
 }
 
 public class Box: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float pz, float sx, float sy, float sz) {
     this.world = world;
     this.mass = mass;
     pos = vec3(px, py, pz);
     size = vec3(sx, sy, sz);
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] VTX = [
+      -1, -1, -1,
+       1, -1, -1,
+       1,  1, -1,
+      -1,  1, -1,
+
+      -1, -1,  1,
+       1, -1,  1,
+       1,  1,  1,
+      -1,  1,  1,
+
+      -1, -1, -1,
+       1, -1, -1,
+       1, -1,  1,
+      -1, -1,  1,
+
+      -1,  1, -1,
+       1,  1, -1,
+       1,  1,  1,
+      -1,  1,  1,
+
+      -1, -1, -1,
+      -1,  1, -1,
+      -1,  1,  1,
+      -1, -1,  1,
+
+       1, -1, -1,
+       1,  1, -1,
+       1,  1,  1,
+       1, -1,  1
+    ];
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public override void recordLinePoints(LinePoint lp) {
@@ -302,47 +446,26 @@ public class Box: ShapeBase {
   }
 
   public override void drawShadow(mat4 view, LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_QUADS);
-    lp.vertex(-1, -1, -1);
-    lp.vertex( 1, -1, -1);
-    lp.vertex( 1,  1, -1);
-    lp.vertex(-1,  1, -1);
+    }
 
-    lp.vertex(-1, -1,  1);
-    lp.vertex( 1, -1,  1);
-    lp.vertex( 1,  1,  1);
-    lp.vertex(-1,  1,  1);
-
-    lp.vertex(-1, -1, -1);
-    lp.vertex( 1, -1, -1);
-    lp.vertex( 1, -1,  1);
-    lp.vertex(-1, -1,  1);
-
-    lp.vertex(-1,  1, -1);
-    lp.vertex( 1,  1, -1);
-    lp.vertex( 1,  1,  1);
-    lp.vertex(-1,  1,  1);
-
-    lp.vertex(-1, -1, -1);
-    lp.vertex(-1,  1, -1);
-    lp.vertex(-1,  1,  1);
-    lp.vertex(-1, -1,  1);
-
-    lp.vertex( 1, -1, -1);
-    lp.vertex( 1,  1, -1);
-    lp.vertex( 1,  1,  1);
-    lp.vertex( 1, -1,  1);
-    glEnd();
+    glBindVertexArray(vao);
+    glDrawArrays(GL_TRIANGLE_FAN,  0, 4);
+    glDrawArrays(GL_TRIANGLE_FAN,  4, 4);
+    glDrawArrays(GL_TRIANGLE_FAN,  8, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
+    glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
   }
 }
 
 public class LinePoint {
+ public:
+  static const GLuint posLoc = 0;
  private:
   static const int HISTORY_MAX = 40;
+  static ShaderProgram program;
   Field field;
   vec3[] pos;
   vec3[][] posHist;
@@ -399,6 +522,37 @@ public class LinePoint {
     isFirstRecord = true;
     spectrumColorR = spectrumColorG = spectrumColorB = 0;
     _enableSpectrumColor = true;
+  }
+
+  public static void initProgram() {
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform mat4 transmat;\n"
+      "uniform vec3 basePos;\n"
+      "uniform vec3 baseSize;\n"
+      "\n"
+      "attribute vec3 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  vec4 pos4 = transmat * vec4(basePos + 0.5 * baseSize * pos, 1);\n"
+      "  gl_Position = projmat * vec4(pos4.xyz, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    program.bindAttribLocation(posLoc, "pos");
+    program.link();
+  }
+
+  public static void close() {
+    program.close();
   }
 
   public void setSpectrumParams(float r, float g, float b, float length) nothrow {
@@ -476,9 +630,20 @@ public class LinePoint {
     }
   }
 
-  public void vertex(float ox, float oy, float oz) {
-    vec3 t = calcTranslatedPos(ox, oy, oz);
-    glVertex3f(t.x, t.y, t.z);
+  public bool prepareDraw(mat4 view, vec3 pos, vec3 size) {
+    program.use();
+
+    if (!setShadowColor()) {
+      return false;
+    }
+
+    program.setUniform("projmat", view);
+    program.setUniform("transmat", m);
+    program.setUniform("basePos", pos);
+    program.setUniform("baseSize", size);
+    program.setUniform("brightness", Screen.brightness);
+
+    return true;
   }
 
   private vec3 calcTranslatedPos(float ox, float oy, float oz) {
@@ -489,10 +654,10 @@ public class LinePoint {
     return trans.xyz;
   }
 
-  public bool setShadowColor() {
+  private bool setShadowColor() {
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
       return false;
-    Screen.setColor(spectrumColorR * 0.3f, spectrumColorG * 0.3f, spectrumColorB * 0.3f);
+    program.setUniform("color", vec3(spectrumColorR, spectrumColorG, spectrumColorB) * 0.3f);
     return true;
   }
 

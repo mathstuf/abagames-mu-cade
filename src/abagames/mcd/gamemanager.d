@@ -90,6 +90,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     ConnectedParticle.init();
     TailParticle.init();
     Field.init();
+    LinePoint.initProgram();
     pad = cast(RecordableTwinStickPad) input;
     pad.openJoystick();
     screen = cast(Screen) abstScreen;
@@ -219,6 +220,11 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     Letter.close();
     EyeShape.close();
     CenterShape.close();
+    Square.close();
+    Sphere.close();
+    Triangle.close();
+    Box.close();
+    LinePoint.close();
   }
 
   public override void move() {
