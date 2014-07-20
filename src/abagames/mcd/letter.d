@@ -73,7 +73,6 @@ public class Letter {
     glEnableVertexAttribArray(posLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public static void close() {
@@ -127,11 +126,9 @@ public class Letter {
     draw.translate(x, y, 0);
     program.setUniform("drawmat", draw);
 
-    glBindVertexArray(vao);
+    program.useVao(vao);
 
     setLetter(n);
-
-    glBindVertexArray(0);
   }
 
   public static enum Direction {

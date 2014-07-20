@@ -330,7 +330,6 @@ public class Field {
     glEnableVertexAttribArray(multLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public void close() {
@@ -461,7 +460,7 @@ public class Field {
     fieldProgram.setUniform("brightness", Screen.brightness);
     fieldProgram.setUniform("size", _size);
 
-    glBindVertexArray(fieldVao);
+    fieldProgram.useVao(fieldVao);
 
     for (float x = -0.9f; x < 1.0f; x += 0.1f) {
       fieldProgram.setUniform("xFactor", x);
@@ -482,8 +481,6 @@ public class Field {
       fieldProgram.setUniform("xFactor", 1.);
       glDrawArrays(GL_LINES, 0, 2);
     }
-
-    glBindVertexArray(0);
   }
 
   private void drawSquare(mat4 view, float x, float y, float w, float h, float z, float a) {
@@ -503,7 +500,7 @@ public class Field {
     overlayProgram.setUniform("projmat", view);
     overlayProgram.setUniform("brightness", Screen.brightness);
 
-    glBindVertexArray(overlayVao);
+    overlayProgram.useVao(overlayVao);
 
     for (int i = 0; i < 9; i++) {
       static GLuint[4] ELEM;
@@ -538,7 +535,7 @@ public class Field {
     letterProgram.setUniform("projmat", view);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(letterVao);
+    letterProgram.useVao(letterVao);
 
     for (int i = 0; i < 5; i++) {
       letterProgram.setUniform("brightness", 1.);
@@ -565,8 +562,6 @@ public class Field {
       else
         x += lof * 0.9f;
     }
-
-    glBindVertexArray(0);
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glDisable(GL_TEXTURE_2D);

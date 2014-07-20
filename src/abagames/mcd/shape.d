@@ -160,7 +160,6 @@ public class Square: ShapeBase {
     glEnableVertexAttribArray(LinePoint.posLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public static void close() {
@@ -194,10 +193,8 @@ public class Square: ShapeBase {
       return;
     }
 
-    glBindVertexArray(vao);
+    LinePoint.useVao(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glBindVertexArray(0);
   }
 }
 
@@ -235,7 +232,6 @@ public class Sphere: ShapeBase {
     glEnableVertexAttribArray(LinePoint.posLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public static void close() {
@@ -278,7 +274,7 @@ public class Sphere: ShapeBase {
       return;
     }
 
-    glBindVertexArray(vao);
+    LinePoint.useVao(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 }
@@ -317,7 +313,6 @@ public class Triangle: ShapeBase {
     glEnableVertexAttribArray(LinePoint.posLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public static void close() {
@@ -341,7 +336,7 @@ public class Triangle: ShapeBase {
       return;
     }
 
-    glBindVertexArray(vao);
+    LinePoint.useVao(vao);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
   }
 }
@@ -405,7 +400,6 @@ public class Box: ShapeBase {
     glEnableVertexAttribArray(LinePoint.posLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public static void close() {
@@ -449,7 +443,7 @@ public class Box: ShapeBase {
       return;
     }
 
-    glBindVertexArray(vao);
+    LinePoint.useVao(vao);
     glDrawArrays(GL_TRIANGLE_FAN,  0, 4);
     glDrawArrays(GL_TRIANGLE_FAN,  4, 4);
     glDrawArrays(GL_TRIANGLE_FAN,  8, 4);
@@ -645,6 +639,10 @@ public class LinePoint {
     return true;
   }
 
+  public static void useVao(GLuint vao) {
+    program.useVao(vao);
+  }
+
   private vec3 calcTranslatedPos(float ox, float oy, float oz) {
     vec3 o = vec3(ox, oy, oz);
     vec3 sz = vec3(baseSize.x * o.x, baseSize.y * o.y, baseSize.z * o.z);
@@ -787,7 +785,6 @@ public class EyeShape: Drawable {
     glEnableVertexAttribArray(posLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public static void close() {
@@ -806,7 +803,7 @@ public class EyeShape: Drawable {
     program.setUniform("modelmat", model);
     program.setUniform("brightness", Screen.brightness);
 
-    glBindVertexArray(vao);
+    program.useVao(vao);
 
     program.setUniform("color", 1.0f, 0, 0);
 
@@ -823,8 +820,6 @@ public class EyeShape: Drawable {
 
     program.setUniform("factor", 1, 1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glBindVertexArray(0);
   }
 }
 
@@ -888,7 +883,6 @@ public class CenterShape: Drawable {
      glEnableVertexAttribArray(posLoc);
 
      glBindBuffer(GL_ARRAY_BUFFER, 0);
-     glBindVertexArray(0);
    }
 
   public static void close() {
@@ -907,7 +901,7 @@ public class CenterShape: Drawable {
     program.setUniform("modelmat", model);
     program.setUniform("brightness", Screen.brightness);
 
-    glBindVertexArray(vao);
+    program.useVao(vao);
 
     program.setUniform("color", 0.6f, 1.0f, 0.5f);
     program.setUniform("factor", 0.2f, 0.2f);

@@ -103,7 +103,6 @@ public class Screen: Screen3D {
     glEnableVertexAttribArray(colorFactorLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public mat4 setField(Field field) {
@@ -128,10 +127,8 @@ public class Screen: Screen3D {
     program.setUniform("alpha", a);
     program.setUniform("brightness", Screen.brightness);
 
-    glBindVertexArray(vao);
+    program.useVao(vao);
     glDrawArrays(GL_LINE_STRIP, 0, 3);
-
-    glBindVertexArray(0);
   }
 
   public override mat4 screenResized() {

@@ -18,6 +18,7 @@ private import std.conv;
 public class ShaderProgram {
  private:
   static GLuint lastProgram = 0;
+  static GLuint lastVao = 0;
   bool haveShader;
   GLuint vertexShader;
   GLuint fragmentShader;
@@ -104,6 +105,14 @@ public class ShaderProgram {
     }
     glUseProgram(program);
     lastProgram = program;
+  }
+
+  public void useVao(GLuint vao) {
+    if (lastVao == vao) {
+      return;
+    }
+    glBindVertexArray(vao);
+    lastVao = vao;
   }
 
   public void bindAttribLocation(GLuint index, string name) {

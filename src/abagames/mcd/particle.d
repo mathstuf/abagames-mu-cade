@@ -262,7 +262,6 @@ public class ConnectedParticle: Actor {
     glEnableVertexAttribArray(usePrevLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public override void close() {
@@ -374,10 +373,8 @@ public class ConnectedParticle: Actor {
     program.setUniform("color", r, g, b);
     program.setUniform("brightness", Screen.brightness);
 
-    glBindVertexArray(vao);
+    program.useVao(vao);
     glDrawArrays(GL_LINES, 0, 2);
-
-    glBindVertexArray(0);
   }
 
   public vec3 pos() {
@@ -622,7 +619,6 @@ public class StarParticle: Actor {
     glEnableVertexAttribArray(sizeFactorLoc);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
   }
 
   public override void close() {
@@ -665,10 +661,8 @@ public class StarParticle: Actor {
     program.setUniform("size", size);
     program.setUniform("brightness", Screen.brightness);
 
-    glBindVertexArray(vao);
+    program.useVao(vao);
     glDrawArrays(GL_LINES, 0, 2);
-
-    glBindVertexArray(0);
   }
 }
 
