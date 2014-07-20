@@ -101,8 +101,6 @@ public class Screen: Screen3D {
 
     glVertexAttribPointer(colorFactorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(colorFactorLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public mat4 setField(Field field) {

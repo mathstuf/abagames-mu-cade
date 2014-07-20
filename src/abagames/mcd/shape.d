@@ -158,8 +158,6 @@ public class Square: ShapeBase {
 
     glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(LinePoint.posLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public static void close() {
@@ -230,8 +228,6 @@ public class Sphere: ShapeBase {
 
     glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(LinePoint.posLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public static void close() {
@@ -311,8 +307,6 @@ public class Triangle: ShapeBase {
 
     glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(LinePoint.posLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public static void close() {
@@ -398,8 +392,6 @@ public class Box: ShapeBase {
 
     glVertexAttribPointer(LinePoint.posLoc, 3, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(LinePoint.posLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public static void close() {
@@ -783,8 +775,6 @@ public class EyeShape: Drawable {
 
     glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(posLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public static void close() {
@@ -881,8 +871,6 @@ public class CenterShape: Drawable {
 
      glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
      glEnableVertexAttribArray(posLoc);
-
-     glBindBuffer(GL_ARRAY_BUFFER, 0);
    }
 
   public static void close() {

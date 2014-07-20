@@ -260,8 +260,6 @@ public class ConnectedParticle: Actor {
 
     glVertexAttribPointer(usePrevLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(usePrevLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public override void close() {
@@ -617,8 +615,6 @@ public class StarParticle: Actor {
 
     glVertexAttribPointer(sizeFactorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(sizeFactorLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public override void close() {

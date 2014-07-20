@@ -328,8 +328,6 @@ public class Field {
 
     glVertexAttribPointer(multLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(multLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public void close() {

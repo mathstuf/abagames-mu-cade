@@ -71,8 +71,6 @@ public class Letter {
 
     glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
     glEnableVertexAttribArray(posLoc);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   public static void close() {
