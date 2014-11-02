@@ -29,8 +29,6 @@ public class OdeActor: Actor {
   dBodyID _bodyId;
   dGeomID[] geomId;
   int geomNum = 0;
-  dGeomID[] transformedGeomId;
-  int trGeomNum = 0;
   ContactJoint[] contactJoint;
   int contactJointNum = 0;
   bool bodyCreated;
@@ -51,7 +49,6 @@ public class OdeActor: Actor {
 
   public void init(bool checkFeedback = false) {
     geomId = new dGeomID[GEOM_NUM];
-    transformedGeomId = new dGeomID[GEOM_NUM];
     if (checkFeedback) {
       contactJoint = new ContactJoint[CONTACT_JOINT_NUM];
       foreach (ref ContactJoint cj; contactJoint) {
@@ -68,7 +65,6 @@ public class OdeActor: Actor {
     else
       world.storeOdeActor(cast(dBodyID) 0, this);
     geomNum = 0;
-    trGeomNum = 0;
     clearContactJoint();
     _exists = true;
   }
@@ -118,16 +114,7 @@ public class OdeActor: Actor {
     geomNum++;
   }
 
-  public void addTransformedGeom(dGeomID gi) {
-    if (trGeomNum >= GEOM_NUM)
-      return;
-    transformedGeomId[trGeomNum] = gi;
-    trGeomNum++;
-  }
-
   private void destroyGeom() {
-    for (int i = 0; i < trGeomNum; i++)
-      dGeomDestroy(transformedGeomId[i]);
     for (int i = 0; i < geomNum; i++)
       dGeomDestroy(geomId[i]);
   }
