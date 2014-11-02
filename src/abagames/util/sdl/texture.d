@@ -106,8 +106,7 @@ public class Texture {
           }
         }
         glBindTexture(GL_TEXTURE_2D, num + ti);
-        glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA8, panelWidth, panelHeight);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, panelWidth, panelHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels.ptr);
+        glTexImage2D(GL_TEXTURE_2D, 4, GL_RGBA, panelWidth, panelHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.ptr);
         glGenerateMipmap(GL_TEXTURE_2D);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -115,8 +114,7 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
         if (maskColor != 0xffffffffu) {
           glBindTexture(GL_TEXTURE_2D, maskNum + ti);
-          glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA8, panelWidth, panelHeight);
-          glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, panelWidth, panelHeight, GL_BGRA, GL_UNSIGNED_BYTE, maskPixels.ptr);
+          glTexImage2D(GL_TEXTURE_2D, 4, GL_RGBA, panelWidth, panelHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, maskPixels.ptr);
           glGenerateMipmap(GL_TEXTURE_2D);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
