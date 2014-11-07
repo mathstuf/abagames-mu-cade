@@ -33,13 +33,13 @@ public class Field {
   static Rand rand;
   static ShaderProgram fieldProgram;
   static GLuint fieldVao;
-  static GLuint[2] fieldVbo;
+  static GLuint fieldVbo;
   static ShaderProgram letterProgram;
   static GLuint letterVao;
-  static GLuint[2] letterVbo;
+  static GLuint letterVbo;
   static ShaderProgram overlayProgram;
   static GLuint overlayVao;
-  static GLuint[3] overlayVbo;
+  static GLuint overlayVbo;
   Screen screen;
   World world;
   GameManager gameManager;
@@ -115,30 +115,28 @@ public class Field {
     fieldProgram.link();
     fieldProgram.use();
 
-    glGenBuffers(2, fieldVbo.ptr);
+    glGenBuffers(1, &fieldVbo);
     glGenVertexArrays(1, &fieldVao);
 
-    static const float[] Z = [
-       0,
-      -8
+    static const float[] FIELD_BUF = [
+      /*
+      z,  color */
+       0, 1,
+      -8, 0.4f
     ];
-    static const float[] COLOR = [
-      1,
-      0.4f
-    ];
+    enum FIELD_Z = 0;
+    enum FIELD_COLOR = 1;
+    enum FIELD_BUFSZ = 2;
 
     glBindVertexArray(fieldVao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, fieldVbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, Z.length * float.sizeof, Z.ptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, fieldVbo);
+    glBufferData(GL_ARRAY_BUFFER, FIELD_BUF.length * float.sizeof, FIELD_BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(zLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(zLoc, 1, FIELD_BUFSZ, FIELD_Z);
     glEnableVertexAttribArray(zLoc);
 
-    glBindBuffer(GL_ARRAY_BUFFER, fieldVbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, COLOR.length * float.sizeof, COLOR.ptr, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(colorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(colorLoc, 1, FIELD_BUFSZ, FIELD_COLOR);
     glEnableVertexAttribArray(colorLoc);
 
     letterProgram = new ShaderProgram;
@@ -179,34 +177,30 @@ public class Field {
 
     letterProgram.setUniform("sampler", 0);
 
-    glGenBuffers(2, letterVbo.ptr);
+    glGenBuffers(1, &letterVbo);
     glGenVertexArrays(1, &letterVao);
 
-    static const float[] FACTOR = [
-      -0.5f, -0.5f,
-       0.5f, -0.5f,
-       0.5f,  0.5f,
-      -0.5f,  0.5f
+    static const float[] LETTER_BUF = [
+      /*
+      factor,       tex */
+      -0.5f, -0.5f, 0, 0,
+       0.5f, -0.5f, 1, 0,
+       0.5f,  0.5f, 1, 1,
+      -0.5f,  0.5f, 0, 1
     ];
-    static const float[] TEX = [
-      0, 0,
-      1, 0,
-      1, 1,
-      0, 1
-    ];
+    enum LETTER_FACTOR = 0;
+    enum LETTER_TEX = 2;
+    enum LETTER_BUFSZ = 4;
 
     glBindVertexArray(letterVao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, letterVbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, FACTOR.length * float.sizeof, FACTOR.ptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, letterVbo);
+    glBufferData(GL_ARRAY_BUFFER, LETTER_BUF.length * float.sizeof, LETTER_BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(factorLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(factorLoc, 2, LETTER_BUFSZ, LETTER_FACTOR);
     glEnableVertexAttribArray(factorLoc);
 
-    glBindBuffer(GL_ARRAY_BUFFER, letterVbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, TEX.length * float.sizeof, TEX.ptr, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(texLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(texLoc, 2, LETTER_BUFSZ, LETTER_TEX);
     glEnableVertexAttribArray(texLoc);
 
     overlayProgram = new ShaderProgram;
@@ -239,111 +233,67 @@ public class Field {
     overlayProgram.link();
     overlayProgram.use();
 
-    glGenBuffers(3, overlayVbo.ptr);
+    glGenBuffers(1, &overlayVbo);
     glGenVertexArrays(1, &overlayVao);
 
-    static const float[] VTX = [
-      370, 466,
-      370, 466,
-      615, 466,
-      615, 466,
-      631, 450,
-      631, 450,
-      631,  30,
-      631,  30,
-      615,  14,
-      615,  14,
-       25,  14,
-       25,  14,
-        9,  30,
-        9,  30,
-        9, 450,
-        9, 450,
-       25, 466,
-       25, 466,
-      270, 466,
-      270, 466
+    static const float[] OVERLAY_BUF = [
+      /*
+      pos,      diff,    mult, padding */
+      370, 466,  0,  7, -1,    0, 0, 0,
+      370, 466,  0,  7,  1,    0, 0, 0,
+      615, 466,  0,  7, -1,    0, 0, 0,
+      615, 466,  0,  7,  1,    0, 0, 0,
+      631, 450,  7,  0, -1,    0, 0, 0,
+      631, 450,  7,  0,  1,    0, 0, 0,
+      631,  30,  7,  0, -1,    0, 0, 0,
+      631,  30,  7,  0,  1,    0, 0, 0,
+      615,  14,  0, -7, -1,    0, 0, 0,
+      615,  14,  0, -7,  1,    0, 0, 0,
+       25,  14,  0, -7, -1,    0, 0, 0,
+       25,  14,  0, -7,  1,    0, 0, 0,
+        9,  30, -7,  0, -1,    0, 0, 0,
+        9,  30, -7,  0,  1,    0, 0, 0,
+        9, 450, -7,  0, -1,    0, 0, 0,
+        9, 450, -7,  0,  1,    0, 0, 0,
+       25, 466,  0,  7, -1,    0, 0, 0,
+       25, 466,  0,  7,  1,    0, 0, 0,
+      270, 466,  0,  7, -1,    0, 0, 0,
+      270, 466,  0,  7,  1,    0, 0, 0
     ];
-    static const float[] DIFF = [
-       0,  7,
-       0,  7,
-       0,  7,
-       0,  7,
-       7,  0,
-       7,  0,
-       7,  0,
-       7,  0,
-       0, -7,
-       0, -7,
-       0, -7,
-       0, -7,
-      -7,  0,
-      -7,  0,
-      -7,  0,
-      -7,  0,
-       0,  7,
-       0,  7,
-       0,  7,
-       0,  7
-    ];
-    static const float[] MULT = [
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1,
-      -1,
-       1
-    ];
+    enum OVERLAY_POS = 0;
+    enum OVERLAY_DIFF = 2;
+    enum OVERLAY_MULT = 4;
+    enum OVERLAY_BUFSZ = 8;
 
     glBindVertexArray(overlayVao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo);
+    glBufferData(GL_ARRAY_BUFFER, OVERLAY_BUF.length * float.sizeof, OVERLAY_BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(posLoc, 2, OVERLAY_BUFSZ, OVERLAY_POS);
     glEnableVertexAttribArray(posLoc);
 
-    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, DIFF.length * float.sizeof, DIFF.ptr, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(diffLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(diffLoc, 2, OVERLAY_BUFSZ, OVERLAY_DIFF);
     glEnableVertexAttribArray(diffLoc);
 
-    glBindBuffer(GL_ARRAY_BUFFER, overlayVbo[2]);
-    glBufferData(GL_ARRAY_BUFFER, MULT.length * float.sizeof, MULT.ptr, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(multLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(multLoc, 1, OVERLAY_BUFSZ, OVERLAY_MULT);
     glEnableVertexAttribArray(multLoc);
   }
 
   public void close() {
     if (fieldProgram !is null) {
       glDeleteVertexArrays(1, &fieldVao);
-      glDeleteBuffers(2, fieldVbo.ptr);
+      glDeleteBuffers(1, &fieldVbo);
       fieldProgram.close();
       fieldProgram = null;
 
       glDeleteVertexArrays(1, &letterVao);
-      glDeleteBuffers(2, letterVbo.ptr);
+      glDeleteBuffers(1, &letterVbo);
       letterProgram.close();
       letterProgram = null;
 
       glDeleteVertexArrays(1, &overlayVao);
-      glDeleteBuffers(3, overlayVbo.ptr);
+      glDeleteBuffers(1, &overlayVbo);
       overlayProgram.close();
       overlayProgram = null;
     }

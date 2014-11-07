@@ -19,7 +19,7 @@ public class Screen: Screen3D {
   static const string CAPTION = "Mu-cade";
   static ShaderProgram program;
   static GLuint vao;
-  static GLuint[2] vbo;
+  static GLuint vbo;
   Field field;
 
   protected override void init() {
@@ -74,32 +74,29 @@ public class Screen: Screen3D {
     program.link();
     program.use();
 
-    glGenBuffers(2, vbo.ptr);
+    glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
 
-    static const float[] RATIO = [
-      0,
-      0.5f,
-      1
+    static const float[] BUF = [
+      /*
+      ratio, colorFactor */
+      0,    1,
+      0.5f, 0.5f,
+      1,    1
     ];
-    static const float[] COLORFACTOR = [
-      1,
-      0.5f,
-      1
-    ];
+    enum RATIO = 0;
+    enum COLORFACTOR = 1;
+    enum BUFSZ = 2;
 
     glBindVertexArray(vao);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-    glBufferData(GL_ARRAY_BUFFER, RATIO.length * float.sizeof, RATIO.ptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(ratioLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(ratioLoc, 1, BUFSZ, RATIO);
     glEnableVertexAttribArray(ratioLoc);
 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-    glBufferData(GL_ARRAY_BUFFER, COLORFACTOR.length * float.sizeof, COLORFACTOR.ptr, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(colorFactorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(colorFactorLoc, 1, BUFSZ, COLORFACTOR);
     glEnableVertexAttribArray(colorFactorLoc);
   }
 
@@ -110,7 +107,7 @@ public class Screen: Screen3D {
 
   protected override void close() {
     glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(2, vbo.ptr);
+    glDeleteBuffers(1, &vbo);
     program.close();
   }
 

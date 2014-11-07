@@ -248,17 +248,21 @@ public class ConnectedParticle: Actor {
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
 
-    static const float[] USEPREV = [
+    static const float[] BUF = [
+      /*
+      usePrev */
       0,
       1
     ];
+    enum USEPREV = 0;
+    enum BUFSZ = 1;
 
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, USEPREV.length * float.sizeof, USEPREV.ptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(usePrevLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(usePrevLoc, 1, BUFSZ, USEPREV);
     glEnableVertexAttribArray(usePrevLoc);
   }
 
@@ -603,17 +607,21 @@ public class StarParticle: Actor {
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
 
-    static const float[] SIZEFACTOR = [
+    static const float[] BUF = [
+      /*
+      sizeFactor */
       0,
       1
     ];
+    enum SIZEFACTOR = 0;
+    enum BUFSZ = 1;
 
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, SIZEFACTOR.length * float.sizeof, SIZEFACTOR.ptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(sizeFactorLoc, 1, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(sizeFactorLoc, 1, BUFSZ, SIZEFACTOR);
     glEnableVertexAttribArray(sizeFactorLoc);
   }
 

@@ -55,7 +55,9 @@ public class Letter {
     glGenBuffers(1, &vbo);
     glGenVertexArrays(1, &vao);
 
-    static const float[] VTX = [
+    static const float[] BUF = [
+      /*
+      pos */
       -0.5f,   0,
       -0.33f, -0.5f,
        0.33f, -0.5f,
@@ -63,13 +65,15 @@ public class Letter {
        0.33f,  0.5f,
       -0.33f,  0.5f
     ];
+    enum POS = 0;
+    enum BUFSZ = 2;
 
     glBindVertexArray(vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, VTX.length * float.sizeof, VTX.ptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, null);
+    vertexAttribPointer(posLoc, 2, BUFSZ, POS);
     glEnableVertexAttribArray(posLoc);
   }
 
