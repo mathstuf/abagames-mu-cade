@@ -376,27 +376,7 @@ public class Box: ShapeBase {
       -1, -1,  1, 0,
        1, -1,  1, 0,
        1,  1,  1, 0,
-      -1,  1,  1, 0,
-
-      -1, -1, -1, 0,
-       1, -1, -1, 0,
-       1, -1,  1, 0,
-      -1, -1,  1, 0,
-
-      -1,  1, -1, 0,
-       1,  1, -1, 0,
-       1,  1,  1, 0,
-      -1,  1,  1, 0,
-
-      -1, -1, -1, 0,
-      -1,  1, -1, 0,
-      -1,  1,  1, 0,
-      -1, -1,  1, 0,
-
-       1, -1, -1, 0,
-       1,  1, -1, 0,
-       1,  1,  1, 0,
-       1, -1,  1, 0
+      -1,  1,  1, 0
     ];
     enum POS = 0;
     enum BUFSZ = 4;
@@ -451,13 +431,22 @@ public class Box: ShapeBase {
       return;
     }
 
+    static const GLubyte[] IDX = [
+      0, 1, 2, 3,
+      4, 5, 6, 7,
+      0, 1, 5, 4,
+      3, 2, 6, 7,
+      0, 3, 7, 4,
+      1, 2, 6, 5
+    ];
+
     LinePoint.useVao(vao);
-    glDrawArrays(GL_TRIANGLE_FAN,  0, 4);
-    glDrawArrays(GL_TRIANGLE_FAN,  4, 4);
-    glDrawArrays(GL_TRIANGLE_FAN,  8, 4);
-    glDrawArrays(GL_TRIANGLE_FAN, 12, 4);
-    glDrawArrays(GL_TRIANGLE_FAN, 16, 4);
-    glDrawArrays(GL_TRIANGLE_FAN, 20, 4);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr +  0);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr +  4);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr +  8);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr + 12);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr + 16);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr + 20);
   }
 }
 
