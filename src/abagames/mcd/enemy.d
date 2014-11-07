@@ -539,14 +539,9 @@ public class EnemySpec {
     model = state.rot * model;
     model.translate(state.pos.x, state.pos.y, state.pos.z);
 
-    glPushMatrix();
-    Screen.glTranslate(state.pos);
-    glMultMatrixf(state.rot.transposed.value_ptr);
-    glScalef(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
     lp.beginRecord(model);
     shape.recordLinePoints(lp);
     lp.endRecord();
-    glPopMatrix();
   }
 
   public void drawShadow(mat4 view, LinePoint lp) {

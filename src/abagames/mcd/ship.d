@@ -434,13 +434,9 @@ public class Ship: OdeActor, BulletTarget {
     mat4 model = rot;
     model.translate(_pos.x, _pos.y, _pos.z);
 
-    glPushMatrix();
-    Screen.glTranslate(_pos);
-    glMultMatrixf(rot.transposed.value_ptr);
     linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public override void draw(mat4 view) {
@@ -469,14 +465,9 @@ public class Ship: OdeActor, BulletTarget {
     model.scale(15, 15, 15);
     model.translate(x, y, 0);
 
-    glPushMatrix();
-    glTranslatef(x, y, 0);
-    glScalef(15, 15, 15);
-    glRotatef(180, 0, 0, 1);
     linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -652,14 +643,9 @@ public class ShipTail: OdeActor {
     model = model * rot;
     model.translate(_pos.x, _pos.y, _pos.z);
 
-    glPushMatrix();
-    Screen.glTranslate(_pos);
-    glMultMatrixf(rot.transposed.value_ptr);
-    glScalef(size.x, size.y, size.z);
     linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public override void draw(mat4 view) {
