@@ -60,8 +60,7 @@ public class Texture {
     SDL_Surface *s = loadBmp(name);
     glGenTextures(1, &num);
     glBindTexture(GL_TEXTURE_2D, num);
-    glTexStorage2D(GL_TEXTURE_2D, 4, GL_RGBA8, s.w, s.h);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, s.w, s.h, GL_BGRA, GL_UNSIGNED_BYTE, s.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s.w, s.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, s.pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
