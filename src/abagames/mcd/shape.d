@@ -494,7 +494,7 @@ public class LinePoint {
   private void diffuseSpectrum() {
     const float dfr = 0.01f;
     for (int j = 0; j < HISTORY_MAX; j++) {
-      for (int i = 0; i < posIdx; i += 2) {
+      for (int i = 0; i < posIdx - 1; i += 2) {
         float ox = posHist[j][i].x - posHist[j][i+1].x;
         float oy = posHist[j][i].y - posHist[j][i+1].y;
         float oz = posHist[j][i].z - posHist[j][i+1].z;
@@ -535,7 +535,7 @@ public class LinePoint {
     if (isFirstRecord)
       return;
     glBegin(GL_LINES);
-    for (int i = 0; i < posIdx; i += 2)
+    for (int i = 0; i < posIdx - 1; i += 2)
       Screen.drawLine(pos[i].x, pos[i].y, pos[i].z,
                       pos[i + 1].x, pos[i + 1].y, pos[i + 1].z, _alpha);
     glEnd();
@@ -575,7 +575,7 @@ public class LinePoint {
       int hi = cast(int) hif;
       int nhi = cast(int) nhif;
       if (posHist[hi][0].fastdist(posHist[nhi][0]) < 8) {
-        for (int i = 0; i < posIdx; i += 2) {
+        for (int i = 0; i < posIdx - 1; i += 2) {
           glVertex3f(posHist[hi][i].x, posHist[hi][i].y, posHist[hi][i].z);
           glVertex3f(posHist[hi][i+1].x, posHist[hi][i+1].y, posHist[hi][i+1].z);
           glVertex3f(posHist[nhi][i+1].x, posHist[nhi][i+1].y, posHist[nhi][i+1].z);
