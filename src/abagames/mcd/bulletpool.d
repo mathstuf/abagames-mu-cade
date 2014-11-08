@@ -135,9 +135,6 @@ public class BulletPool: ActorPool!(BulletActor), BulletsManager {
   }
 }
 
-extern (C) {
-}
-
 public class SimpleBulletPool: OdeActorPool!(SimpleBullet) {
   public this(int n, Object[] args) {
     super(n, args);
