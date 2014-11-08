@@ -129,7 +129,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     stageManager = new StageManager(field, ship, bullets, world, enemies);
     titleManager = new TitleManager(field, stageManager, prefManager);
     rand = new Rand;
-    //loadLastReplay();
+    loadLastReplay();
   }
 
   public override void start() {
@@ -158,18 +158,18 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   public void restartTitle() {
-    /*if (_replayData) {
+    if (_replayData) {
       state = GameState.REPLAY;
       ship.replayMode = true;
       RecordableTwinStickPad rtsp = cast(RecordableTwinStickPad) pad;
       rtsp.startReplay(_replayData.twinStickPadInputRecord);
       score = 0;
       time = 0;
-    } else {*/
+    } else {
       state = GameState.TITLE;
       _replayData = new ReplayData;
       _replayData.seed = rand.nextInt32();
-    //}
+    }
     initGame();
     aPressed = true;
   }
@@ -357,8 +357,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       return;
     prefManager.prefData.recordResult(score, time);
     prefManager.save();
-    // TODO: Fix. Seems to have had bugs from before.
-    //saveLastReplay();
+    saveLastReplay();
   }
 
   public void backToTitle() {
