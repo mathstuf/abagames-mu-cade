@@ -102,40 +102,24 @@ public abstract class ShapeBase: Shape {
   }
 
   public void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
-    if (pos.x == 0 && pos.y == 0 && pos.z == 0) {
-      dGeomID bg;
-      if (!sizeScale.isNull) {
-        bg = dCreateBox(sid,
-                        size.x * sizeScale.x * shapeBoxScale,
-                        size.y * sizeScale.y * shapeBoxScale,
-                        size.z * sizeScale.z * shapeBoxScale);
-      } else {
-        bg = dCreateBox(sid,
-                        size.x * shapeBoxScale,
-                        size.y * shapeBoxScale,
-                        size.z * shapeBoxScale);
-      }
-      oa.addGeom(bg);
+    dGeomID bg;
+    if (!sizeScale.isNull) {
+      bg = dCreateBox(sid,
+                      size.x * sizeScale.x * shapeBoxScale,
+                      size.y * sizeScale.y * shapeBoxScale,
+                      size.z * sizeScale.z * shapeBoxScale);
+      vec3 offset = vec3(pos.x * sizeScale.x,
+                         pos.y * sizeScale.y,
+                         pos.z * sizeScale.z);
+      dGeomSetPosition(bg, offset.x, offset.y, offset.z);
     } else {
-      dGeomID tg = dCreateGeomTransform(sid);
-      dGeomID bg;
-      if (!sizeScale.isNull) {
-        bg = dCreateBox(cast(dSpaceID) 0,
-                        size.x * sizeScale.x * shapeBoxScale,
-                        size.y * sizeScale.y * shapeBoxScale,
-                        size.z * sizeScale.z * shapeBoxScale);
-        dGeomSetPosition(bg, pos.x * sizeScale.x, pos.y * sizeScale.y, pos.z * sizeScale.z);
-      } else {
-        bg = dCreateBox(cast(dSpaceID) 0,
-                        size.x * shapeBoxScale,
-                        size.y * shapeBoxScale,
-                        size.z * shapeBoxScale);
-        dGeomSetPosition(bg, pos.x, pos.y, pos.z);
-      }
-      dGeomTransformSetGeom(tg, bg);
-      oa.addGeom(tg);
-      oa.addTransformedGeom(bg);
+      bg = dCreateBox(sid,
+                      size.x * shapeBoxScale,
+                      size.y * shapeBoxScale,
+                      size.z * shapeBoxScale);
+      dGeomSetPosition(bg, pos.x, pos.y, pos.z);
     }
+    oa.addGeom(bg);
   }
 
   public abstract void recordLinePoints(LinePoint lp);
@@ -198,32 +182,20 @@ public class Sphere: ShapeBase {
   }
 
   public override void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
-    if (pos.x == 0 && pos.y == 0 && pos.z == 0) {
-      dGeomID bg;
-      if (!sizeScale.isNull) {
-        bg = dCreateSphere(sid,
-                           size.x * sizeScale.x * shapeBoxScale);
-      } else {
-        bg = dCreateSphere(sid,
-                           size.x * shapeBoxScale);
-      }
-      oa.addGeom(bg);
+    dGeomID bg;
+    if (!sizeScale.isNull) {
+      bg = dCreateSphere(cast(dSpaceID) 0,
+                         size.x * sizeScale.x * shapeBoxScale);
+      vec3 offset = vec3(pos.x * sizeScale.x,
+                         pos.y * sizeScale.y,
+                         pos.z * sizeScale.z);
+      dGeomSetPosition(bg, offset.x, offset.y, offset.z);
     } else {
-      dGeomID tg = dCreateGeomTransform(sid);
-      dGeomID bg;
-      if (!sizeScale.isNull) {
-        bg = dCreateSphere(cast(dSpaceID) 0,
-                           size.x * sizeScale.x * shapeBoxScale);
-        dGeomSetPosition(bg, pos.x * sizeScale.x, pos.y * sizeScale.y, pos.z * sizeScale.z);
-      } else {
-        bg = dCreateSphere(cast(dSpaceID) 0,
-                           size.x * shapeBoxScale);
-        dGeomSetPosition(bg, pos.x, pos.y, pos.z);
-      }
-      dGeomTransformSetGeom(tg, bg);
-      oa.addGeom(tg);
-      oa.addTransformedGeom(bg);
+      bg = dCreateSphere(cast(dSpaceID) 0,
+                         size.x * shapeBoxScale);
+      dGeomSetPosition(bg, pos.x, pos.y, pos.z);
     }
+    oa.addGeom(bg);
   }
 
   public override void recordLinePoints(LinePoint lp) {
