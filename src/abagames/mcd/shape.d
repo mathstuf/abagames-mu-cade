@@ -456,12 +456,16 @@ public class LinePoint {
  private:
   static const int HISTORY_MAX = 40;
   static ShaderProgram program;
+  static ShaderProgram spectrumBorderProgram;
+  static ShaderProgram spectrumProgram;
+  static GLuint[2] vao;
   Field field;
   vec3[] pos;
-  vec3[][] posHist;
+  vec3[] posHist;
   int posIdx, histIdx;
   vec3 basePos, baseSize;
   mat4 m;
+  GLuint[2] vbo;
   bool isFirstRecord;
   float spectrumColorR, spectrumColorG, spectrumColorB;
   float spectrumColorRTrg, spectrumColorGTrg, spectrumColorBTrg;
@@ -492,18 +496,28 @@ public class LinePoint {
   public this(Field field, int pointMax = 8) {
     init();
     pos = new vec3[pointMax];
-    posHist = new vec3[][HISTORY_MAX];
+    posHist = new vec3[HISTORY_MAX * pointMax];
     this.field = field;
     foreach (ref vec3 p; pos)
-        p = vec3(0);
-    foreach (ref vec3[] pp; posHist) {
-      pp = new vec3[pointMax];
-      foreach (ref vec3 p; pp)
-        p = vec3(0);
+      p = vec3(0);
+    foreach (ref vec3 p; posHist) {
+      p = vec3(0);
     }
     spectrumColorRTrg = spectrumColorGTrg = spectrumColorBTrg = 0;
     spectrumLength = 0;
     _alpha = _alphaTrg = 1;
+
+    glGenBuffers(2, vbo.ptr);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, 3 * pointMax * float.sizeof, null, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, 3 * HISTORY_MAX * pointMax * float.sizeof, null, GL_DYNAMIC_DRAW);
+  }
+
+  public ~this() {
+    glDeleteBuffers(2, vbo.ptr);
   }
 
   public void init() nothrow {
@@ -514,7 +528,7 @@ public class LinePoint {
     _enableSpectrumColor = true;
   }
 
-  public static void initProgram() {
+  public static void initPrograms() {
     program = new ShaderProgram;
     program.setVertexShader(
       "uniform mat4 projmat;\n"
@@ -539,10 +553,73 @@ public class LinePoint {
     );
     program.bindAttribLocation(posLoc, "pos");
     program.link();
+
+    spectrumBorderProgram = new ShaderProgram;
+    spectrumBorderProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "\n"
+      "attribute vec3 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(pos, 1);\n"
+      "}\n"
+    );
+    spectrumBorderProgram.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    spectrumBorderProgram.bindAttribLocation(posLoc, "pos");
+    spectrumBorderProgram.link();
+    spectrumBorderProgram.use();
+
+    glGenVertexArrays(2, vao.ptr);
+
+    enum POS = 0;
+    enum BUFSZ = 3;
+
+    glBindVertexArray(vao[0]);
+    glEnableVertexAttribArray(posLoc);
+
+    spectrumProgram = new ShaderProgram;
+    spectrumProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "\n"
+      "attribute vec3 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(pos, 1);\n"
+      "}\n"
+    );
+    spectrumProgram.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 base_color;\n"
+      "uniform float a;\n"
+      "uniform float b;\n"
+      "\n"
+      "void main() {\n"
+      "  vec3 inv_color = vec3(1) - base_color;\n"
+      "  vec3 color = base_color + inv_color * b;\n"
+      "  gl_FragColor = vec4(a) * vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    spectrumProgram.bindAttribLocation(posLoc, "pos");
+    spectrumProgram.link();
+    spectrumProgram.use();
+
+    glBindVertexArray(vao[1]);
+    glEnableVertexAttribArray(posLoc);
   }
 
   public static void close() {
+    glDeleteVertexArrays(2, vao.ptr);
+
     program.close();
+    spectrumBorderProgram.close();
+    spectrumProgram.close();
   }
 
   public void setSpectrumParams(float r, float g, float b, float length) nothrow {
@@ -578,16 +655,12 @@ public class LinePoint {
       isFirstRecord = false;
       for (int j = 0; j < HISTORY_MAX; j++) {
         for (int i = 0; i < posIdx; i++) {
-          posHist[j][i].x = pos[i].x;
-          posHist[j][i].y = pos[i].y;
-          posHist[j][i].z = pos[i].z;
+          posHist[j * posIdx + i] = pos[i];
         }
       }
     } else {
       for (int i = 0; i < posIdx; i++) {
-        posHist[histIdx][i].x = pos[i].x;
-        posHist[histIdx][i].y = pos[i].y;
-        posHist[histIdx][i].z = pos[i].z;
+        posHist[histIdx * posIdx + i] = pos[i];
       }
     }
     diffuseSpectrum();
@@ -601,21 +674,22 @@ public class LinePoint {
       spectrumColorB *= 0.9f;
     }
     _alpha += (_alphaTrg - _alpha) * 0.05f;
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * posIdx * float.sizeof, pos.ptr);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * HISTORY_MAX * posIdx * float.sizeof, posHist.ptr);
   }
 
   private void diffuseSpectrum() {
     const float dfr = 0.01f;
     for (int j = 0; j < HISTORY_MAX; j++) {
+      size_t base = j * posIdx;
       for (int i = 0; i < posIdx - 1; i += 2) {
-        float ox = posHist[j][i].x - posHist[j][i+1].x;
-        float oy = posHist[j][i].y - posHist[j][i+1].y;
-        float oz = posHist[j][i].z - posHist[j][i+1].z;
-        posHist[j][i].x += ox * dfr;
-        posHist[j][i].y += oy * dfr;
-        posHist[j][i].z += oz * dfr;
-        posHist[j][i+1].x -= ox * dfr;
-        posHist[j][i+1].y -= oy * dfr;
-        posHist[j][i+1].z -= oz * dfr;
+        vec3 o = posHist[base + i] - posHist[base + i + 1];
+        posHist[base + i + 0] += o * dfr;
+        posHist[base + i + 1] -= o * dfr;
       }
     }
   }
@@ -668,11 +742,18 @@ public class LinePoint {
       return;
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
       return;
-    Screen.setColor(spectrumColorR, spectrumColorG, spectrumColorB);
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < posIdx; i++)
-      glVertex3f(pos[i].x, pos[i].y, pos[i].z);
-    glEnd();
+
+    spectrumBorderProgram.use();
+
+    spectrumBorderProgram.setUniform("projmat", view);
+    spectrumBorderProgram.setUniform("brightness", Screen.brightness);
+    spectrumBorderProgram.setUniform("color", spectrumColorR, spectrumColorG, spectrumColorB);
+
+    spectrumBorderProgram.useVao(vao[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    vertexAttribPointer(posLoc, 3, 3, 0);
+
+    glDrawArrays(GL_LINE_STRIP, 0, posIdx);
   }
 
   public void drawSpectrum(mat4 view) {
@@ -680,34 +761,46 @@ public class LinePoint {
       return;
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
       return;
-    glBegin(GL_QUADS);
+
+    spectrumProgram.use();
+
+    spectrumProgram.setUniform("projmat", view);
+    spectrumProgram.setUniform("brightness", Screen.brightness);
+    spectrumProgram.setUniform("base_color", spectrumColorR, spectrumColorG, spectrumColorB);
+
+    spectrumProgram.useVao(vao[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    vertexAttribPointer(posLoc, 3, 3, 0);
+
     float al = 0.5f, bl = 0.5f;
     float hif, nhif;
     float hio = 5.5f;
     nhif = histIdx;
     for (int j = 0; j < 10 * spectrumLength; j++) {
-      Screen.setColor((spectrumColorR + (1.0f - spectrumColorR) * bl) * al,
-                      (spectrumColorG + (1.0f - spectrumColorG) * bl) * al,
-                      (spectrumColorB + (1.0f - spectrumColorB) * bl) * al,
-                      al);
+      spectrumProgram.setUniform("a", al);
+      spectrumProgram.setUniform("b", bl);
+
       hif = nhif;
       nhif = hif - hio;
       if (nhif < 0)
         nhif += HISTORY_MAX;
       int hi = cast(int) hif;
       int nhi = cast(int) nhif;
-      if (posHist[hi][0].fastdist(posHist[nhi][0]) < 8) {
+      if (posHist[hi * posIdx].fastdist(posHist[nhi * posIdx]) < 8) {
         for (int i = 0; i < posIdx - 1; i += 2) {
-          glVertex3f(posHist[hi][i].x, posHist[hi][i].y, posHist[hi][i].z);
-          glVertex3f(posHist[hi][i+1].x, posHist[hi][i+1].y, posHist[hi][i+1].z);
-          glVertex3f(posHist[nhi][i+1].x, posHist[nhi][i+1].y, posHist[nhi][i+1].z);
-          glVertex3f(posHist[nhi][i].x, posHist[nhi][i].y, posHist[nhi][i].z);
+          const GLushort[] idx = [
+            cast(GLushort) ( hi * posIdx + i + 0),
+            cast(GLushort) ( hi * posIdx + i + 1),
+            cast(GLushort) (nhi * posIdx + i + 1),
+            cast(GLushort) (nhi * posIdx + i + 0),
+          ];
+
+          glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, idx.ptr);
         }
       }
       al *= 0.88f * spectrumLength;
       bl *= 0.88f * spectrumLength;
     }
-    glEnd();
   }
 
   public float alpha(float v) {

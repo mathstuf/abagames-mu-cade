@@ -90,7 +90,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     ConnectedParticle.init();
     TailParticle.init();
     Field.init();
-    LinePoint.initProgram();
+    LinePoint.initPrograms();
     pad = cast(RecordableTwinStickPad) input;
     pad.openJoystick();
     screen = cast(Screen) abstScreen;

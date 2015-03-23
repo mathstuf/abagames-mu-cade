@@ -439,7 +439,6 @@ public class Field {
   }
 
   public void drawOverlay(mat4 view) {
-    viewOrthoFixed();
     gameManager.drawState(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -471,8 +470,6 @@ public class Field {
     float lsz = 26, lof = 20;
 
     drawLogo(view, x, y, lsz, lof);
-
-    viewPerspective();
   }
 
   public void drawLogo(mat4 view, float x, float y, float lsz, float lof, bool drawOutline = true) {
@@ -525,23 +522,6 @@ public class Field {
   public mat4 fixedOrthoView() {
     // TODO: Remove the 640x480 assumption.
     return mat4.orthographic(0, 640, 480, 0, -1, 1);
-  }
-
-  private void viewOrthoFixed() {
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, 640, 480, 0, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-  }
-
-  private void viewPerspective() {
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    glPopMatrix();
   }
 
   public bool checkInField(vec2 p) {
