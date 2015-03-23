@@ -67,7 +67,7 @@ public class Particle: Actor {
     vel = vec3(0);
     size = 1;
     size3 = vec3(0);
-    linePoint = new LinePoint(field);
+    linePoint = new LinePoint(field, 2);
     linePoint.setPos(vec3(0, 0, 0));
     deg = md = 0;
     r = g = b = 0;
@@ -210,7 +210,7 @@ public class ConnectedParticle: Actor {
     field = cast(Field) args[0];
     _pos = vec3(0);
     _vel = vec3(0);
-    linePoint = new LinePoint(field);
+    linePoint = new LinePoint(field, 2);
     linePoint.setPos(vec3(0, 0, 0));
     linePoint.setSize(vec3(1, 1, 1));
     r = g = b = 0;
