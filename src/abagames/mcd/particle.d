@@ -11,6 +11,7 @@ private import abagames.util.actor;
 private import abagames.util.rand;
 private import abagames.util.math;
 private import abagames.util.support.gl;
+private import abagames.util.sdl.shaderprogram;
 private import abagames.mcd.shape;
 private import abagames.mcd.field;
 private import abagames.mcd.screen;
@@ -66,10 +67,13 @@ public class Particle: Actor {
     vel = vec3(0);
     size = 1;
     size3 = vec3(0);
-    linePoint = new LinePoint(field);
+    linePoint = new LinePoint(field, 2);
     linePoint.setPos(vec3(0, 0, 0));
     deg = md = 0;
     r = g = b = 0;
+  }
+
+  public override void close() {
   }
 
   public void set(vec2 p,
@@ -131,19 +135,19 @@ public class Particle: Actor {
   }
 
   private void recordLinePoints() {
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    mat4 model = mat4.identity;
+    model.rotate(-deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, pos.z);
+
+    linePoint.beginRecord(model);
     linePoint.record(-1, 0, 0);
     linePoint.record( 1, 0, 0);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
-  public override void draw() {
-    linePoint.drawSpectrum();
-    linePoint.drawWithSpectrumColor();
+  public override void draw(mat4 view) {
+    linePoint.drawSpectrum(view);
+    linePoint.drawWithSpectrumColor(view);
   }
 }
 
@@ -159,10 +163,13 @@ public class ParticlePool: ActorPool!(Particle) {
 public class ConnectedParticle: Actor {
   static const float SPRING_CONSTANT = 0.04f;
   static Rand rand;
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
   Field field;
   vec3 _pos;
   vec3 _vel;
-  GLdouble rot[16];
+  mat4 rot;
   bool enableRotate;
   int cnt;
   float decayRatio;
@@ -203,11 +210,69 @@ public class ConnectedParticle: Actor {
     field = cast(Field) args[0];
     _pos = vec3(0);
     _vel = vec3(0);
-    linePoint = new LinePoint(field);
+    linePoint = new LinePoint(field, 2);
     linePoint.setPos(vec3(0, 0, 0));
     linePoint.setSize(vec3(1, 1, 1));
     r = g = b = 0;
     baseLength = 0;
+
+    if (program !is null) {
+      return;
+    }
+
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform vec3 pos;\n"
+      "uniform vec3 prevPos;\n"
+      "\n"
+      "attribute float usePrev;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4((usePrev == 0.) ? prevPos : pos, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform vec3 color;\n"
+      "uniform float brightness;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint usePrevLoc = 0;
+    program.bindAttribLocation(usePrevLoc, "usePrev");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] BUF = [
+      /*
+      usePrev */
+      0,
+      1
+    ];
+    enum USEPREV = 0;
+    enum BUFSZ = 1;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(usePrevLoc, 1, BUFSZ, USEPREV);
+    glEnableVertexAttribArray(usePrevLoc);
+  }
+
+  public override void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
   }
 
   public void set(float x, float y, float d, float s, float r, float g, float b,
@@ -241,9 +306,8 @@ public class ConnectedParticle: Actor {
     _exists = true;
   }
 
-  public void setRot(GLdouble[16] r) {
-    for (int i = 0; i < 16; i++)
-      rot[i] = r[i];
+  public void setRot(mat4 r) {
+    rot = r;
     enableRotate = true;
   }
 
@@ -283,34 +347,36 @@ public class ConnectedParticle: Actor {
   public void recordLinePoints() {
     if (!prevParticle || !prevParticle.exists)
       return;
-    glPushMatrix();
-    Screen.glTranslate(_pos);
+
+    mat4 model = mat4.identity;
     if (enableRotate)
-      glMultMatrixd(rot.ptr);
-    linePoint.beginRecord();
+      model = model * rot;
+    model.translate(_pos.x, _pos.y, _pos.z);
+
+    linePoint.beginRecord(model);
     linePoint.record(0, 0, 0);
     linePoint.record((prevParticle.pos.x - _pos.x) * 2,
                      (prevParticle.pos.y - _pos.y) * 2,
                      (prevParticle.pos.z - _pos.z) * 2);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (!prevParticle || !prevParticle.exists)
       return;
-    linePoint.drawSpectrum();
-    linePoint.drawWithSpectrumColor();
-    glPushMatrix();
-    Screen.glTranslate(_pos);
-    Screen.setColor(r, g, b);
-    glBegin(GL_LINES);
-    glVertex3f(0, 0, 0);
-    glVertex3f(prevParticle.pos.x - _pos.x,
-               prevParticle.pos.y - _pos.y,
-               prevParticle.pos.z - _pos.z);
-    glEnd();
-    glPopMatrix();
+    linePoint.drawSpectrum(view);
+    linePoint.drawWithSpectrumColor(view);
+
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("pos", _pos);
+    program.setUniform("prevPos", prevParticle.pos);
+    program.setUniform("color", r, g, b);
+    program.setUniform("brightness", Screen.brightness);
+
+    program.useVao(vao);
+    glDrawArrays(GL_LINES, 0, 2);
   }
 
   public vec3 pos() {
@@ -401,6 +467,9 @@ public class TailParticle: Actor {
     r = g = b = 0;
   }
 
+  public override void close() {
+  }
+
   public void set(float x, float y, float z, float sz, float r, float g, float b, int c) {
     pos.x = x;
     pos.y = y;
@@ -451,18 +520,18 @@ public class TailParticle: Actor {
   }
 
   private void recordLinePoints() {
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    mat4 model = mat4.identity;
+    model.rotate(-deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, pos.z);
+
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
-  public override void draw() {
-    linePoint.drawSpectrum();
-    linePoint.drawWithSpectrumColor();
+  public override void draw(mat4 view) {
+    linePoint.drawSpectrum(view);
+    linePoint.drawWithSpectrumColor(view);
   }
 }
 
@@ -482,6 +551,9 @@ public class StarParticle: Actor {
   vec3 vel;
   float size;
   int cnt;
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
 
   invariant() {
     if (pos) {
@@ -500,6 +572,66 @@ public class StarParticle: Actor {
     pos = vec3(0);
     vel = vec3(0);
     size = 1;
+
+    if (program !is null) {
+      return;
+    }
+
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform vec3 pos;\n"
+      "uniform float size;\n"
+      "\n"
+      "attribute float sizeFactor;\n"
+      "\n"
+      "void main() {\n"
+      "  vec3 spos = pos;\n"
+      "  spos.z += size * sizeFactor;\n"
+      "  gl_Position = projmat * vec4(spos, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform vec4 color;\n"
+      "uniform float brightness;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = color * vec4(vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint sizeFactorLoc = 0;
+    program.bindAttribLocation(sizeFactorLoc, "sizeFactor");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] BUF = [
+      /*
+      sizeFactor */
+      0,
+      1
+    ];
+    enum SIZEFACTOR = 0;
+    enum BUFSZ = 1;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(sizeFactorLoc, 1, BUFSZ, SIZEFACTOR);
+    glEnableVertexAttribArray(sizeFactorLoc);
+  }
+
+  public override void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
   }
 
   public void set(float x, float y, float z, float speed, float sz) {
@@ -519,9 +651,22 @@ public class StarParticle: Actor {
       _exists = false;
   }
 
-  public override void draw() {
-    glVertex3f(pos.x, pos.y, pos.z);
-    glVertex3f(pos.x, pos.y, pos.z + size);
+  public static void setColor(vec4 color) {
+    program.use();
+
+    program.setUniform("color", color);
+  }
+
+  public override void draw(mat4 view) {
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("pos", pos);
+    program.setUniform("size", size);
+    program.setUniform("brightness", Screen.brightness);
+
+    program.useVao(vao);
+    glDrawArrays(GL_LINES, 0, 2);
   }
 }
 
@@ -560,6 +705,9 @@ public class NumIndicator: Actor {
     num2 = -1;
   }
 
+  public override void close() {
+  }
+
   public void set(int n1, int n2, float x, float y, float vx, float vy, float sz = 0.5f, int c = 300) {
     num1 = n1;
     num2 = n2;
@@ -581,16 +729,16 @@ public class NumIndicator: Actor {
       _exists = false;
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (num2 <= 1) {
-      Letter.drawNumSign(num1, pos.x + Letter.getWidthNum(num1, size) / 2, pos.y, size);
+      Letter.drawNumSign(view, num1, pos.x + Letter.getWidthNum(num1, size) / 2, pos.y, size);
     } else {
       float wd = Letter.getWidthNum(num1, size) + Letter.getWidth(1, size) + Letter.getWidthNum(num2, size);
       float x;
       x = pos.x - wd / 2 + Letter.getWidthNum(num1, size);
-      Letter.drawNumSign(num1, x, pos.y, size);
+      Letter.drawNumSign(view, num1, x, pos.y, size);
       x = pos.x + wd / 2;
-      Letter.drawNumSign(num2, x, pos.y, size, 33);
+      Letter.drawNumSign(view, num2, x, pos.y, size, 33);
     }
   }
 }

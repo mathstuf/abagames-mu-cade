@@ -7,6 +7,7 @@ module abagames.mcd.title;
 
 private import std.conv;
 private import std.string;
+private import gl3n.linalg;
 private import abagames.util.support.gl;
 private import abagames.mcd.screen;
 private import abagames.mcd.field;
@@ -38,34 +39,20 @@ public class TitleManager {
     cnt++;
   }
 
-  public void draw() {
-    glEnable(GL_TEXTURE_2D);
+  public void draw(mat4 view) {
     float x = 250, y = 50;
     float lsz = 50, lof = 40;
-    for (int i = 0; i < 5; i++) {
-      glBlendFunc(GL_DST_COLOR,GL_ZERO);
-      Screen.setColorForced(1, 1, 1);
-      field.titleTexture.bindMask(i);
-      field.drawLetter(i, x, y, lsz);
-      glBlendFunc(GL_ONE, GL_ONE);
-      Screen.setColor(1, 1, 1);
-      field.titleTexture.bind(i);
-      field.drawLetter(i, x, y, lsz);
-      if (i == 0)
-        x += lof * 1.0f;
-      else
-        x += lof * 0.9f;
-    }
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    glDisable(GL_TEXTURE_2D);
+
+    field.drawLogo(view, x, y, lsz, lof, false);
+
     if ((cnt % 120) < 60)
-      Letter.drawString("PUSH SHOT BUTTON TO START", 200, 430, 5);
+      Letter.drawString(view, "PUSH SHOT BUTTON TO START", 200, 430, 5);
     if ((cnt % 3600) == 0)
       stageManager.initRank();
-    drawRanking();
+    drawRanking(view);
   }
 
-  private void drawRanking() {
+  private void drawRanking(mat4 view) {
     int rn = (cnt - 60) / 40;
     if (rn > PrefData.RANKING_NUM)
       rn = PrefData.RANKING_NUM;
@@ -87,11 +74,11 @@ public class TitleManager {
         break;
       }
       if (i < 9)
-        Letter.drawString(rstr, 80, y, 7);
+        Letter.drawString(view, rstr, 80, y, 7);
       else
-        Letter.drawString(rstr, 66, y, 7);
-      Letter.drawNum(prefManager.prefData.highScore[i], 400, y, 6);
-      Letter.drawTime(prefManager.prefData.time[i], 600, y + 6, 6);
+        Letter.drawString(view, rstr, 66, y, 7);
+      Letter.drawNum(view, prefManager.prefData.highScore[i], 400, y, 6);
+      Letter.drawTime(view, prefManager.prefData.time[i], 600, y + 6, 6);
       y += 24;
     }
   }

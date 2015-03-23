@@ -102,23 +102,23 @@ public template ShotImpl() {
   }
 
   public void recordLinePoints() {
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(_deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    mat4 model = mat4.identity;
+    model.rotate(-_deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, 0);
+
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (removeCnt > 0)
       return;
-    linePoint.drawSpectrum();
+    linePoint.drawSpectrum(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    linePoint.draw();
+    linePoint.draw(view);
   }
 
   public float deg() nothrow {

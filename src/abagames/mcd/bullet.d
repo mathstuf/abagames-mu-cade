@@ -74,6 +74,9 @@ public class BulletActor: Actor {
     linePoint.setSpectrumParams(1, 0.25f, 0.5f, 0.2f);
   }
 
+  public override void close() {
+  }
+
   public void set(bml.BulletMLRunner runner,
                   float x, float y, float deg, float speed) {
     bullet.set(runner, x, y, deg, speed, 0);
@@ -182,7 +185,7 @@ public class BulletActor: Actor {
       removeForced();
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
   }
 
   public void slowdown() {
@@ -318,13 +321,13 @@ public class SimpleBullet: OdeActor {
   }
 
   private void recordLinePoints() {
-    glPushMatrix();
-    Screen.glTranslate(pos);
-    glRotatef(deg * 180 / PI, 0, 0, 1);
-    linePoint.beginRecord();
+    mat4 model = mat4.identity;
+    model.rotate(-deg, vec3(0, 0, 1));
+    model.translate(pos.x, pos.y, 0);
+
+    linePoint.beginRecord(model);
     shape.recordLinePoints(linePoint);
     linePoint.endRecord();
-    glPopMatrix();
   }
 
   public void collapseIntoParticle() {
@@ -337,22 +340,22 @@ public class SimpleBullet: OdeActor {
       gameManager.addScore(10);
   }
 
-  public void drawSpectrum() {
+  public void drawSpectrum(mat4 view) {
     if (removeCnt > 0)
       return;
-    linePoint.drawSpectrum();
+    linePoint.drawSpectrum(view);
   }
 
-  public void drawShadow() {
+  public void drawShadow(mat4 view) {
     if (removeCnt > 0)
       return;
-    shape.drawShadow(linePoint);
+    shape.drawShadow(view, linePoint);
   }
 
-  public override void draw() {
+  public override void draw(mat4 view) {
     if (removeCnt > 0)
       return;
-    linePoint.draw();
+    linePoint.draw(view);
   }
 
   public void slowdown() {

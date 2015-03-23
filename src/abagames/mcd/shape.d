@@ -10,7 +10,7 @@ private import derelict.ode.ode;
 private import gl3n.linalg;
 private import abagames.util.math;
 private import abagames.util.support.gl;
-private import abagames.util.sdl.displaylist;
+private import abagames.util.sdl.shaderprogram;
 private import abagames.util.ode.odeactor;
 private import abagames.util.ode.world;
 private import abagames.mcd.screen;
@@ -24,7 +24,7 @@ public interface Shape {
   public void addMass(dMass* m, Nullable!vec3 sizeScale = Nullable!vec3(), float massScale = 1);
   public void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3());
   public void recordLinePoints(LinePoint lp);
-  public void drawShadow(LinePoint lp);
+  public void drawShadow(mat4 view, LinePoint lp);
 }
 
 public class ShapeGroup: Shape {
@@ -61,9 +61,9 @@ public class ShapeGroup: Shape {
       s.recordLinePoints(lp);
   }
 
-  public void drawShadow(LinePoint lp) {
+  public void drawShadow(mat4 view, LinePoint lp) {
     foreach (Shape s; shapes)
-      s.drawShadow(lp);
+      s.drawShadow(view, lp);
   }
 }
 
@@ -123,17 +123,50 @@ public abstract class ShapeBase: Shape {
   }
 
   public abstract void recordLinePoints(LinePoint lp);
-  public abstract void drawShadow(LinePoint lp);
+  public abstract void drawShadow(mat4 view, LinePoint lp);
 }
 
 public class Square: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float sx, float sy) {
     this.world = world;
     this.mass = mass;
     pos = vec3(px, py, 0);
     size = vec3(sx, sy, 1);
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] BUF = [
+      /*
+      pos,       padding */
+      -1, -1, 0, 0,
+       1, -1, 0, 0,
+       1,  1, 0, 0,
+      -1,  1, 0, 0
+    ];
+    enum POS = 0;
+    enum BUFSZ = 4;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(LinePoint.posLoc, 3, BUFSZ, POS);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public this(World world, float mass, float px, float py, float pz,
@@ -157,28 +190,57 @@ public class Square: ShapeBase {
     lp.record(-1, -1, 0);
   }
 
-  public override void drawShadow(LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+  public override void drawShadow(mat4 view, LinePoint lp) {
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_TRIANGLE_FAN);
-    lp.vertex(-1, -1, 0);
-    lp.vertex( 1, -1, 0);
-    lp.vertex( 1,  1, 0);
-    lp.vertex(-1,  1, 0);
-    glEnd();
+    }
+
+    LinePoint.useVao(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 }
 
 public class Sphere: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float rad) {
     this.world = world;
     this.mass = mass;
     pos = vec3(px, py, 0);
     size = vec3(rad, rad, rad);
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] BUF = [
+      /*
+      pos,       padding */
+      -1, -1, 0, 0,
+       1, -1, 0, 0,
+       1,  1, 0, 0,
+      -1,  1, 0, 0
+    ];
+    enum POS = 0;
+    enum BUFSZ = 4;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(LinePoint.posLoc, 3, BUFSZ, POS);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public override void addGeom(OdeActor oa, dSpaceID sid, Nullable!vec3 sizeScale = Nullable!vec3()) {
@@ -211,22 +273,20 @@ public class Sphere: ShapeBase {
     lp.record(-1, -1, 0);
   }
 
-  public override void drawShadow(LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+  public override void drawShadow(mat4 view, LinePoint lp) {
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_TRIANGLE_FAN);
-    lp.vertex(-1, -1, 0);
-    lp.vertex( 1, -1, 0);
-    lp.vertex( 1,  1, 0);
-    lp.vertex(-1,  1, 0);
-    glEnd();
+    }
+
+    LinePoint.useVao(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 }
 
 public class Triangle: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float sx, float sy) {
     this.world = world;
@@ -234,6 +294,36 @@ public class Triangle: ShapeBase {
     pos = vec3(px, py, 0);
     size = vec3(sx, sy, 1);
     shapeBoxScale = 1;
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] BUF = [
+      /*
+      pos,       padding */
+       0,  1, 0, 0,
+       1, -1, 0, 0,
+      -0, -1, 0, 0
+    ];
+    enum POS = 0;
+    enum BUFSZ = 4;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(LinePoint.posLoc, 3, BUFSZ, POS);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public override void recordLinePoints(LinePoint lp) {
@@ -247,27 +337,62 @@ public class Triangle: ShapeBase {
     lp.record( 0,  1, 0);
   }
 
-  public override void drawShadow(LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+  public override void drawShadow(mat4 view, LinePoint lp) {
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_TRIANGLE_FAN);
-    lp.vertex( 0,  1, 0);
-    lp.vertex( 1, -1, 0);
-    lp.vertex(-0, -1, 0);
-    glEnd();
+    }
+
+    LinePoint.useVao(vao);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 3);
   }
 }
 
 public class Box: ShapeBase {
  private:
+  static GLuint vao = 0;
+  static GLuint vbo = 0;
 
   public this(World world, float mass, float px, float py, float pz, float sx, float sy, float sz) {
     this.world = world;
     this.mass = mass;
     pos = vec3(px, py, pz);
     size = vec3(sx, sy, sz);
+
+    if (vao) {
+      return;
+    }
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    static const float[] BUF = [
+      /*
+      pos,        padding */
+      -1, -1, -1, 0,
+       1, -1, -1, 0,
+       1,  1, -1, 0,
+      -1,  1, -1, 0,
+
+      -1, -1,  1, 0,
+       1, -1,  1, 0,
+       1,  1,  1, 0,
+      -1,  1,  1, 0
+    ];
+    enum POS = 0;
+    enum BUFSZ = 4;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(LinePoint.posLoc, 3, BUFSZ, POS);
+    glEnableVertexAttribArray(LinePoint.posLoc);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
   }
 
   public override void recordLinePoints(LinePoint lp) {
@@ -301,54 +426,46 @@ public class Box: ShapeBase {
     lp.record(-1,  1, -1);
   }
 
-  public override void drawShadow(LinePoint lp) {
-    lp.setPos(pos);
-    lp.setSize(size);
-    if (!lp.setShadowColor())
+  public override void drawShadow(mat4 view, LinePoint lp) {
+    if (!lp.prepareDraw(view, pos, size)) {
       return;
-    glBegin(GL_QUADS);
-    lp.vertex(-1, -1, -1);
-    lp.vertex( 1, -1, -1);
-    lp.vertex( 1,  1, -1);
-    lp.vertex(-1,  1, -1);
+    }
 
-    lp.vertex(-1, -1,  1);
-    lp.vertex( 1, -1,  1);
-    lp.vertex( 1,  1,  1);
-    lp.vertex(-1,  1,  1);
+    static const GLubyte[] IDX = [
+      0, 1, 2, 3,
+      4, 5, 6, 7,
+      0, 1, 5, 4,
+      3, 2, 6, 7,
+      0, 3, 7, 4,
+      1, 2, 6, 5
+    ];
 
-    lp.vertex(-1, -1, -1);
-    lp.vertex( 1, -1, -1);
-    lp.vertex( 1, -1,  1);
-    lp.vertex(-1, -1,  1);
-
-    lp.vertex(-1,  1, -1);
-    lp.vertex( 1,  1, -1);
-    lp.vertex( 1,  1,  1);
-    lp.vertex(-1,  1,  1);
-
-    lp.vertex(-1, -1, -1);
-    lp.vertex(-1,  1, -1);
-    lp.vertex(-1,  1,  1);
-    lp.vertex(-1, -1,  1);
-
-    lp.vertex( 1, -1, -1);
-    lp.vertex( 1,  1, -1);
-    lp.vertex( 1,  1,  1);
-    lp.vertex( 1, -1,  1);
-    glEnd();
+    LinePoint.useVao(vao);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr +  0);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr +  4);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr +  8);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr + 12);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr + 16);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, IDX.ptr + 20);
   }
 }
 
 public class LinePoint {
+ public:
+  static const GLuint posLoc = 0;
  private:
   static const int HISTORY_MAX = 40;
+  static ShaderProgram program;
+  static ShaderProgram spectrumBorderProgram;
+  static ShaderProgram spectrumProgram;
+  static GLuint[2] vao;
   Field field;
   vec3[] pos;
-  vec3[][] posHist;
+  vec3[] posHist;
   int posIdx, histIdx;
   vec3 basePos, baseSize;
-  GLfloat[16] m;
+  mat4 m;
+  GLuint[2] vbo;
   bool isFirstRecord;
   float spectrumColorR, spectrumColorG, spectrumColorB;
   float spectrumColorRTrg, spectrumColorGTrg, spectrumColorBTrg;
@@ -379,18 +496,28 @@ public class LinePoint {
   public this(Field field, int pointMax = 8) {
     init();
     pos = new vec3[pointMax];
-    posHist = new vec3[][HISTORY_MAX];
+    posHist = new vec3[HISTORY_MAX * pointMax];
     this.field = field;
     foreach (ref vec3 p; pos)
-        p = vec3(0);
-    foreach (ref vec3[] pp; posHist) {
-      pp = new vec3[pointMax];
-      foreach (ref vec3 p; pp)
-        p = vec3(0);
+      p = vec3(0);
+    foreach (ref vec3 p; posHist) {
+      p = vec3(0);
     }
     spectrumColorRTrg = spectrumColorGTrg = spectrumColorBTrg = 0;
     spectrumLength = 0;
     _alpha = _alphaTrg = 1;
+
+    glGenBuffers(2, vbo.ptr);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferData(GL_ARRAY_BUFFER, 3 * pointMax * float.sizeof, null, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferData(GL_ARRAY_BUFFER, 3 * HISTORY_MAX * pointMax * float.sizeof, null, GL_DYNAMIC_DRAW);
+  }
+
+  public ~this() {
+    glDeleteBuffers(2, vbo.ptr);
   }
 
   public void init() nothrow {
@@ -401,6 +528,100 @@ public class LinePoint {
     _enableSpectrumColor = true;
   }
 
+  public static void initPrograms() {
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform mat4 transmat;\n"
+      "uniform vec3 basePos;\n"
+      "uniform vec3 baseSize;\n"
+      "\n"
+      "attribute vec3 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  vec4 pos4 = transmat * vec4(basePos + 0.5 * baseSize * pos, 1);\n"
+      "  gl_Position = projmat * vec4(pos4.xyz, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    program.bindAttribLocation(posLoc, "pos");
+    program.link();
+
+    spectrumBorderProgram = new ShaderProgram;
+    spectrumBorderProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "\n"
+      "attribute vec3 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(pos, 1);\n"
+      "}\n"
+    );
+    spectrumBorderProgram.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    spectrumBorderProgram.bindAttribLocation(posLoc, "pos");
+    spectrumBorderProgram.link();
+    spectrumBorderProgram.use();
+
+    glGenVertexArrays(2, vao.ptr);
+
+    enum POS = 0;
+    enum BUFSZ = 3;
+
+    glBindVertexArray(vao[0]);
+    glEnableVertexAttribArray(posLoc);
+
+    spectrumProgram = new ShaderProgram;
+    spectrumProgram.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "\n"
+      "attribute vec3 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * vec4(pos, 1);\n"
+      "}\n"
+    );
+    spectrumProgram.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 base_color;\n"
+      "uniform float a;\n"
+      "uniform float b;\n"
+      "\n"
+      "void main() {\n"
+      "  vec3 inv_color = vec3(1) - base_color;\n"
+      "  vec3 color = base_color + inv_color * b;\n"
+      "  gl_FragColor = vec4(a) * vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    spectrumProgram.bindAttribLocation(posLoc, "pos");
+    spectrumProgram.link();
+    spectrumProgram.use();
+
+    glBindVertexArray(vao[1]);
+    glEnableVertexAttribArray(posLoc);
+  }
+
+  public static void close() {
+    glDeleteVertexArrays(2, vao.ptr);
+
+    program.close();
+    spectrumBorderProgram.close();
+    spectrumProgram.close();
+  }
+
   public void setSpectrumParams(float r, float g, float b, float length) nothrow {
     spectrumColorRTrg = r;
     spectrumColorGTrg = g;
@@ -408,9 +629,9 @@ public class LinePoint {
     spectrumLength = length;
   }
 
-  public void beginRecord() {
+  public void beginRecord(mat4 model) {
     posIdx = 0;
-    glGetFloatv(GL_MODELVIEW_MATRIX, m.ptr);
+    m = model;
   }
 
   public void setPos(vec3 p) {
@@ -422,11 +643,7 @@ public class LinePoint {
   }
 
   public void record(float ox, float oy, float oz) {
-    float tx, ty, tz;
-    calcTranslatedPos(tx, ty, tz, ox, oy, oz);
-    pos[posIdx].x = tx;
-    pos[posIdx].y = ty;
-    pos[posIdx].z = tz;
+    pos[posIdx] = calcTranslatedPos(ox, oy, oz);
     posIdx++;
   }
 
@@ -438,16 +655,12 @@ public class LinePoint {
       isFirstRecord = false;
       for (int j = 0; j < HISTORY_MAX; j++) {
         for (int i = 0; i < posIdx; i++) {
-          posHist[j][i].x = pos[i].x;
-          posHist[j][i].y = pos[i].y;
-          posHist[j][i].z = pos[i].z;
+          posHist[j * posIdx + i] = pos[i];
         }
       }
     } else {
       for (int i = 0; i < posIdx; i++) {
-        posHist[histIdx][i].x = pos[i].x;
-        posHist[histIdx][i].y = pos[i].y;
-        posHist[histIdx][i].z = pos[i].z;
+        posHist[histIdx * posIdx + i] = pos[i];
       }
     }
     diffuseSpectrum();
@@ -461,103 +674,133 @@ public class LinePoint {
       spectrumColorB *= 0.9f;
     }
     _alpha += (_alphaTrg - _alpha) * 0.05f;
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * posIdx * float.sizeof, pos.ptr);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 3 * HISTORY_MAX * posIdx * float.sizeof, posHist.ptr);
   }
 
   private void diffuseSpectrum() {
     const float dfr = 0.01f;
     for (int j = 0; j < HISTORY_MAX; j++) {
+      size_t base = j * posIdx;
       for (int i = 0; i < posIdx - 1; i += 2) {
-        float ox = posHist[j][i].x - posHist[j][i+1].x;
-        float oy = posHist[j][i].y - posHist[j][i+1].y;
-        float oz = posHist[j][i].z - posHist[j][i+1].z;
-        posHist[j][i].x += ox * dfr;
-        posHist[j][i].y += oy * dfr;
-        posHist[j][i].z += oz * dfr;
-        posHist[j][i+1].x -= ox * dfr;
-        posHist[j][i+1].y -= oy * dfr;
-        posHist[j][i+1].z -= oz * dfr;
+        vec3 o = posHist[base + i] - posHist[base + i + 1];
+        posHist[base + i + 0] += o * dfr;
+        posHist[base + i + 1] -= o * dfr;
       }
     }
   }
 
-  public void vertex(float ox, float oy, float oz) {
-    float tx, ty, tz;
-    calcTranslatedPos(tx, ty, tz, ox, oy, oz);
-    glVertex3f(tx, ty, tz);
-  }
+  public bool prepareDraw(mat4 view, vec3 pos, vec3 size) {
+    program.use();
 
-  private void calcTranslatedPos(ref float tx, ref float ty, ref float tz,
-                                 float ox, float oy, float oz) {
-    float x = basePos.x + baseSize.x / 2 * ox;
-    float y = basePos.y + baseSize.y / 2 * oy;
-    float z = basePos.z + baseSize.z / 2 * oz;
-    tx = m[0] * x + m[4] * y + m[8] * z + m[12];
-    ty = m[1] * x + m[5] * y + m[9] * z + m[13];
-    tz = m[2] * x + m[6] * y + m[10] * z + m[14];
-  }
-
-  public bool setShadowColor() {
-    if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
+    if (!setShadowColor()) {
       return false;
-    Screen.setColor(spectrumColorR * 0.3f, spectrumColorG * 0.3f, spectrumColorB * 0.3f);
+    }
+
+    program.setUniform("projmat", view);
+    program.setUniform("transmat", m);
+    program.setUniform("basePos", pos);
+    program.setUniform("baseSize", size);
+    program.setUniform("brightness", Screen.brightness);
+
     return true;
   }
 
-  public void draw() {
-    if (isFirstRecord)
-      return;
-    glBegin(GL_LINES);
-    for (int i = 0; i < posIdx - 1; i += 2)
-      Screen.drawLine(pos[i].x, pos[i].y, pos[i].z,
-                      pos[i + 1].x, pos[i + 1].y, pos[i + 1].z, _alpha);
-    glEnd();
+  public static void useVao(GLuint vao) {
+    program.useVao(vao);
   }
 
-  public void drawWithSpectrumColor() {
+  private vec3 calcTranslatedPos(float ox, float oy, float oz) {
+    vec3 o = vec3(ox, oy, oz);
+    vec3 sz = vec3(baseSize.x * o.x, baseSize.y * o.y, baseSize.z * o.z);
+    vec3 tpos = basePos + sz * 0.5f;
+    vec4 trans = m * vec4(tpos, 1);
+    return trans.xyz;
+  }
+
+  private bool setShadowColor() {
+    if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
+      return false;
+    program.setUniform("color", vec3(spectrumColorR, spectrumColorG, spectrumColorB) * 0.3f);
+    return true;
+  }
+
+  public void draw(mat4 view) {
+    if (isFirstRecord)
+      return;
+    for (int i = 0; i < posIdx - 1; i += 2)
+      Screen.drawLine(view, pos[i].x, pos[i].y, pos[i].z,
+                            pos[i + 1].x, pos[i + 1].y, pos[i + 1].z, _alpha);
+  }
+
+  public void drawWithSpectrumColor(mat4 view) {
     if (isFirstRecord)
       return;
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
       return;
-    Screen.setColor(spectrumColorR, spectrumColorG, spectrumColorB);
-    glBegin(GL_LINE_STRIP);
-    for (int i = 0; i < posIdx; i++)
-      glVertex3f(pos[i].x, pos[i].y, pos[i].z);
-    glEnd();
+
+    spectrumBorderProgram.use();
+
+    spectrumBorderProgram.setUniform("projmat", view);
+    spectrumBorderProgram.setUniform("brightness", Screen.brightness);
+    spectrumBorderProgram.setUniform("color", spectrumColorR, spectrumColorG, spectrumColorB);
+
+    spectrumBorderProgram.useVao(vao[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+    vertexAttribPointer(posLoc, 3, 3, 0);
+
+    glDrawArrays(GL_LINE_STRIP, 0, posIdx);
   }
 
-  public void drawSpectrum() {
+  public void drawSpectrum(mat4 view) {
     if (spectrumLength <= 0 || isFirstRecord)
       return;
     if (spectrumColorR + spectrumColorG + spectrumColorB < 0.1f)
       return;
-    glBegin(GL_QUADS);
+
+    spectrumProgram.use();
+
+    spectrumProgram.setUniform("projmat", view);
+    spectrumProgram.setUniform("brightness", Screen.brightness);
+    spectrumProgram.setUniform("base_color", spectrumColorR, spectrumColorG, spectrumColorB);
+
+    spectrumProgram.useVao(vao[1]);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
+    vertexAttribPointer(posLoc, 3, 3, 0);
+
     float al = 0.5f, bl = 0.5f;
     float hif, nhif;
     float hio = 5.5f;
     nhif = histIdx;
     for (int j = 0; j < 10 * spectrumLength; j++) {
-      Screen.setColor((spectrumColorR + (1.0f - spectrumColorR) * bl) * al,
-                      (spectrumColorG + (1.0f - spectrumColorG) * bl) * al,
-                      (spectrumColorB + (1.0f - spectrumColorB) * bl) * al,
-                      al);
+      spectrumProgram.setUniform("a", al);
+      spectrumProgram.setUniform("b", bl);
+
       hif = nhif;
       nhif = hif - hio;
       if (nhif < 0)
         nhif += HISTORY_MAX;
       int hi = cast(int) hif;
       int nhi = cast(int) nhif;
-      if (posHist[hi][0].fastdist(posHist[nhi][0]) < 8) {
+      if (posHist[hi * posIdx].fastdist(posHist[nhi * posIdx]) < 8) {
         for (int i = 0; i < posIdx - 1; i += 2) {
-          glVertex3f(posHist[hi][i].x, posHist[hi][i].y, posHist[hi][i].z);
-          glVertex3f(posHist[hi][i+1].x, posHist[hi][i+1].y, posHist[hi][i+1].z);
-          glVertex3f(posHist[nhi][i+1].x, posHist[nhi][i+1].y, posHist[nhi][i+1].z);
-          glVertex3f(posHist[nhi][i].x, posHist[nhi][i].y, posHist[nhi][i].z);
+          const GLushort[] idx = [
+            cast(GLushort) ( hi * posIdx + i + 0),
+            cast(GLushort) ( hi * posIdx + i + 1),
+            cast(GLushort) (nhi * posIdx + i + 1),
+            cast(GLushort) (nhi * posIdx + i + 0),
+          ];
+
+          glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_SHORT, idx.ptr);
         }
       }
       al *= 0.88f * spectrumLength;
       bl *= 0.88f * spectrumLength;
     }
-    glEnd();
   }
 
   public float alpha(float v) {
@@ -574,61 +817,196 @@ public class LinePoint {
 }
 
 public interface Drawable {
-  public void draw();
+  public void draw(mat4 view, mat4 model);
 }
 
 public class EyeShape: Drawable {
-  public void draw() {
-    Screen.setColor(1.0f, 0, 0);
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(-0.5, 0.5, 0);
-    glVertex3f(-0.3, 0.5, 0);
-    glVertex3f(-0.3, 0.3, 0);
-    glVertex3f(-0.5, 0.3, 0);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glVertex3f(0.5, 0.5, 0);
-    glVertex3f(0.3, 0.5, 0);
-    glVertex3f(0.3, 0.3, 0);
-    glVertex3f(0.5, 0.3, 0);
-    glEnd();
-    Screen.setColor(0.8f, 0.4f, 0.4f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-0.5, 0.5, 0);
-    glVertex3f(-0.3, 0.5, 0);
-    glVertex3f(-0.3, 0.3, 0);
-    glVertex3f(-0.5, 0.3, 0);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0.5, 0.5, 0);
-    glVertex3f(0.3, 0.5, 0);
-    glVertex3f(0.3, 0.3, 0);
-    glVertex3f(0.5, 0.3, 0);
-    glEnd();
+ private:
+  static ShaderProgram program;
+  static GLuint vao;
+  static GLuint vbo;
+
+  public this() {
+    if (program !is null) {
+      return;
+    }
+
+    program = new ShaderProgram;
+    program.setVertexShader(
+      "uniform mat4 projmat;\n"
+      "uniform mat4 modelmat;\n"
+      "uniform vec2 factor;\n"
+      "\n"
+      "attribute vec2 pos;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_Position = projmat * modelmat * vec4(pos * factor, 0, 1);\n"
+      "}\n"
+    );
+    program.setFragmentShader(
+      "uniform float brightness;\n"
+      "uniform vec3 color;\n"
+      "\n"
+      "void main() {\n"
+      "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+      "}\n"
+    );
+    GLint posLoc = 0;
+    program.bindAttribLocation(posLoc, "pos");
+    program.link();
+    program.use();
+
+    glGenBuffers(1, &vbo);
+    glGenVertexArrays(1, &vao);
+
+    static const float[] BUF = [
+      /*
+      pos */
+      0.5f, 0.5f,
+      0.3f, 0.5f,
+      0.3f, 0.3f,
+      0.5f, 0.3f
+    ];
+    enum POS = 0;
+    enum BUFSZ = 2;
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+    vertexAttribPointer(posLoc, 2, BUFSZ, POS);
+    glEnableVertexAttribArray(posLoc);
+  }
+
+  public static void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
+  }
+
+  public void draw(mat4 view, mat4 model) {
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("modelmat", model);
+    program.setUniform("brightness", Screen.brightness);
+
+    program.useVao(vao);
+
+    program.setUniform("color", 1.0f, 0, 0);
+
+    program.setUniform("factor", -1, 1);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    program.setUniform("factor", 1, 1);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    program.setUniform("color", 0.8f, 0.4f, 0.4f);
+
+    program.setUniform("factor", -1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    program.setUniform("factor", 1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }
 }
 
 public class CenterShape: Drawable {
-  public void draw() {
-    Screen.setColor(0.6f, 1.0f, 0.5f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-0.2, -0.2, 0);
-    glVertex3f( 0.2, -0.2, 0);
-    glVertex3f( 0.2,  0.2, 0);
-    glVertex3f(-0.2,  0.2, 0);
-    glEnd();
-    Screen.setColor(0.4f, 0.8f, 0.2f);
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(-0.6, 0.6, 0);
-    glVertex3f(-0.3, 0.6, 0);
-    glVertex3f(-0.3, 0.3, 0);
-    glVertex3f(-0.6, 0.3, 0);
-    glEnd();
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex3f(0.6, 0.6, 0);
-    glVertex3f(0.3, 0.6, 0);
-    glVertex3f(0.3, 0.3, 0);
-    glVertex3f(0.6, 0.3, 0);
-    glEnd();
+  private:
+   static ShaderProgram program;
+   static GLuint vao;
+   static GLuint vbo;
+
+   public this() {
+     if (program !is null) {
+       return;
+     }
+
+     program = new ShaderProgram;
+     program.setVertexShader(
+       "uniform mat4 projmat;\n"
+       "uniform mat4 modelmat;\n"
+       "uniform vec2 factor;\n"
+       "\n"
+       "attribute vec2 pos;\n"
+       "\n"
+       "void main() {\n"
+       "  gl_Position = projmat * modelmat * vec4(pos * factor, 0, 1);\n"
+       "}\n"
+     );
+     program.setFragmentShader(
+       "uniform float brightness;\n"
+       "uniform vec3 color;\n"
+       "\n"
+       "void main() {\n"
+       "  gl_FragColor = vec4(color * vec3(brightness), 1);\n"
+       "}\n"
+     );
+     GLint posLoc = 0;
+     program.bindAttribLocation(posLoc, "pos");
+     program.link();
+     program.use();
+
+     glGenBuffers(1, &vbo);
+     glGenVertexArrays(1, &vao);
+
+     static const float[] BUF = [
+       /*
+       pos */
+       -1,   -1,
+        1,   -1,
+        1,    1,
+       -1,    1,
+
+       0.6f,  0.6f,
+       0.3f,  0.6f,
+       0.3f,  0.3f,
+       0.6f,  0.3f
+     ];
+     enum POS = 0;
+     enum BUFSZ = 2;
+
+     glBindVertexArray(vao);
+
+     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+     glBufferData(GL_ARRAY_BUFFER, BUF.length * float.sizeof, BUF.ptr, GL_STATIC_DRAW);
+
+     vertexAttribPointer(posLoc, 2, BUFSZ, POS);
+     glEnableVertexAttribArray(posLoc);
+   }
+
+  public static void close() {
+    if (program !is null) {
+      glDeleteVertexArrays(1, &vao);
+      glDeleteBuffers(1, &vbo);
+      program.close();
+      program = null;
+    }
+  }
+
+  public void draw(mat4 view, mat4 model) {
+    program.use();
+
+    program.setUniform("projmat", view);
+    program.setUniform("modelmat", model);
+    program.setUniform("brightness", Screen.brightness);
+
+    program.useVao(vao);
+
+    program.setUniform("color", 0.6f, 1.0f, 0.5f);
+    program.setUniform("factor", 0.2f, 0.2f);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    program.setUniform("color", 0.4f, 0.8f, 0.2f);
+
+    program.setUniform("factor", -1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
+
+    program.setUniform("factor", 1, 1);
+    glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
   }
 }

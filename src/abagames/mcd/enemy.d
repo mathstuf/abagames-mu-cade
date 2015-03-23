@@ -300,21 +300,21 @@ public class Enemy: OdeActor {
     return state.pos;
   }
 
-  public void drawSpectrum() {
-    state.linePoint.drawSpectrum();
+  public void drawSpectrum(mat4 view) {
+    state.linePoint.drawSpectrum(view);
   }
 
   public bool collideBullet() nothrow {
     return spec.collideBullet;
   }
 
-  public void drawShadow() {
-    spec.drawShadow(state.linePoint);
+  public void drawShadow(mat4 view) {
+    spec.drawShadow(view, state.linePoint);
   }
 
-  public override void draw() {
-    state.linePoint.draw();
-    spec.drawSubShape(state);
+  public override void draw(mat4 view) {
+    state.linePoint.draw(view);
+    spec.drawSubShape(view, state);
   }
 
   public EnemyState getState() {
@@ -345,18 +345,18 @@ public class EnemyPool: OdeActorPool!(Enemy) {
     super(n, args);
   }
 
-  public void drawShadow() {
+  public void drawShadow(mat4 view) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     foreach (Enemy e; actor)
       if (e.exists)
-        e.drawShadow();
+        e.drawShadow(view);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   }
 
-  public void drawSpectrum() {
+  public void drawSpectrum(mat4 view) {
     foreach (Enemy e; actor)
       if (e.exists)
-        e.drawSpectrum();
+        e.drawSpectrum(view);
   }
 
   public bool exists() {
@@ -396,7 +396,7 @@ public class EnemyState {
  public:
   vec3 pos;
   float deg;
-  GLdouble rot[16];
+  mat4 rot;
   dReal[3] linearVel;
   dReal[3] angularVel;
   Nullable!vec3 sizeScale;
@@ -456,9 +456,7 @@ public class EnemyState {
   private void clearState() {
     pos.x = pos.y = pos.z = 0;
     deg = 0;
-    for (int i = 0; i < 16; i++)
-      rot[i] = 0;
-    rot[0] = rot[5] = rot[10] = rot[15] = 1;
+    rot = mat4.identity;
     for (int i = 0; i < 3; i++)
       linearVel[i] = angularVel[i] = 0;
     sizeScale.x = sizeScale.y = sizeScale.z = 1;
@@ -536,21 +534,21 @@ public class EnemySpec {
   public void collide(Enemy enemy, EnemyState state, OdeActor actor) nothrow {}
 
   public void recordLinePoints(EnemyState state, LinePoint lp) {
-    glPushMatrix();
-    Screen.glTranslate(state.pos);
-    glMultMatrixd(state.rot.ptr);
-    glScalef(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
-    lp.beginRecord();
+    mat4 model = mat4.identity;
+    model.scale(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
+    model = state.rot * model;
+    model.translate(state.pos.x, state.pos.y, state.pos.z);
+
+    lp.beginRecord(model);
     shape.recordLinePoints(lp);
     lp.endRecord();
-    glPopMatrix();
   }
 
-  public void drawShadow(LinePoint lp) {
-    shape.drawShadow(lp);
+  public void drawShadow(mat4 view, LinePoint lp) {
+    shape.drawShadow(view, lp);
   }
 
-  public void drawSubShape(EnemyState state) {}
+  public void drawSubShape(mat4 view, EnemyState state) {}
 
   public bool rotate2d() {
    return _rotate2d;

@@ -211,14 +211,14 @@ public template CentMoveImpl() {
     enemy.addConnectedParticles(state.deg - PI / 2, 1.5f * state.sizeScale.x);
   }
 
-  public override void drawSubShape(EnemyState state) {
+  public override void drawSubShape(mat4 view, EnemyState state) {
     if (state.isHead) {
-      glPushMatrix();
-      Screen.glTranslate(state.pos);
-      glMultMatrixd(state.rot.ptr);
-      glScalef(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
-      subShape.draw();
-      glPopMatrix();
+      mat4 model = mat4.identity;
+      model.scale(state.sizeScale.x, state.sizeScale.y, state.sizeScale.z);
+      model = model * state.rot;
+      model.translate(state.pos.x, state.pos.y, state.pos.z);
+
+      subShape.draw(view, model);
     }
   }
 }
