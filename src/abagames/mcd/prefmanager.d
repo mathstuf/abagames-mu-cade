@@ -15,7 +15,7 @@ private import abagames.util.prefmanager;
 public class PrefManager: abagames.util.prefmanager.PrefManager {
  private:
   static const int VERSION_NUM = 10;
-  static const string PREF_FILE_NAME = "mcd.prf";
+  static const string PREF_FILE_NAME = "mu-cade.prf";
   PrefData _prefData;
 
   public this() {
