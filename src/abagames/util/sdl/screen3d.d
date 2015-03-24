@@ -79,6 +79,8 @@ public class Screen3D: Screen, SizableScreen {
   }
 
   public mat4 setPerspective() {
+    const float ratio = cast(GLfloat) _height / cast(GLfloat) _width;
+
     return mat4.perspective(
       -_nearPlane, _nearPlane,
       -_nearPlane * ratio, _nearPlane * ratio,
