@@ -48,8 +48,7 @@ public template ShotImpl() {
 
   public void set(vec3 p, float d) {
     super.set();
-    pos.x = p.x - sin(d) * 0.5f;
-    pos.y = p.y + cos(d) * 0.5f;
+    pos = p.xy - vec2(sin(d), -cos(d)) * 0.5f;
     dBodySetPosition(_bodyId, pos.x, pos.y, 0);
     _deg = d;
     setDeg(d);
@@ -64,8 +63,7 @@ public template ShotImpl() {
   public override void move() {
     cnt++;
     dReal *p = dBodyGetPosition(_bodyId);
-    pos.x = p[0];
-    pos.y = p[1];
+    pos = vec2(p[0], p[1]);
     dBodySetPosition(_bodyId, pos.x, pos.y, 0);
     if (removeCnt > 0) {
       removeCnt++;

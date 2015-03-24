@@ -61,7 +61,7 @@ public class TwinStickPad: Input {
         ry = SDL_JoystickGetAxis(stick, 3);
       }
       if (rx == 0 && ry == 0) {
-        state.right.x = state.right.y = 0;
+        state.right = vec2(0);
       } else {
         ry = -ry;
         float rd = atan2(cast(float) rx, cast(float) ry) * reverse + rotate;
@@ -72,7 +72,7 @@ public class TwinStickPad: Input {
         state.right.y = adjustAxis(cast(int) (cos(rd) * rl));
       }
     } else {
-      state.left.x = state.left.y = state.right.x = state.right.y = 0;
+      state.left = state.right = vec2(0);
     }
     if (keys[SDL_SCANCODE_RIGHT] == SDL_PRESSED || keys[SDL_SCANCODE_KP_6] == SDL_PRESSED ||
         keys[SDL_SCANCODE_D] == SDL_PRESSED)
@@ -187,15 +187,13 @@ public class TwinStickPadState {
   }
 
   public void set(TwinStickPadState s) {
-    left.x = s.left.x;
-    left.y = s.left.y;
-    right.x = s.right.x;
-    right.y = s.right.y;
+    left = s.left;
+    right = s.right;
     button = s.button;
   }
 
   public void clear() {
-    left.x = left.y = right.x = right.y = 0;
+    left = right = vec2(0);
     button = 0;
   }
 
@@ -216,9 +214,7 @@ public class TwinStickPadState {
   }
 
   public bool equals(TwinStickPadState s) {
-    return (left.x == s.left.x && left.y == s.left.y &&
-            right.x == s.right.x && right.y == s.right.y &&
-            button == s.button);
+    return (left == s.left && right == s.right && button == s.button);
   }
 }
 

@@ -27,21 +27,19 @@ public class Math {
   }
 
   public static bool checkVectorHit(vec2 tp, vec2 p, vec2 pp, float hitWidth) {
-    float bmvx, bmvy, inaa;
-    bmvx = pp.x;
-    bmvy = pp.y;
-    bmvx -= p.x;
-    bmvy -= p.y;
-    inaa = bmvx * bmvx + bmvy * bmvy;
+    vec2 bmv;
+    float inaa;
+    bmv = pp;
+    bmv -= p;
+    inaa = bmv * bmv;
     if (inaa > 0.00001) {
-      float sofsx, sofsy, inab, hd;
-      sofsx = tp.x;
-      sofsy = tp.y;
-      sofsx -= p.x;
-      sofsy -= p.y;
-      inab = bmvx * sofsx + bmvy * sofsy;
+      vec2 sofs;
+      float inab, hd;
+      sofs = tp;
+      sofs -= p;
+      inab = bmv * sofs;
       if (inab >= 0 && inab <= inaa) {
-        hd = sofsx * sofsx + sofsy * sofsy - inab * inab / inaa;
+        hd = sofs * sofs - inab * inab / inaa;
         if (hd >= 0 && hd <= hitWidth)
           return true;
       }

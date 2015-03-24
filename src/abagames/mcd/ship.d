@@ -166,12 +166,10 @@ public class Ship: OdeActor, BulletTarget {
     bulletDisapCnt = 200;
     restartBulletDisapCnt = bulletDisapCnt + 1;
     trgDeg = 0;
-    trgPos.x = trgPos.y = 0;
-    slideVel.x = slideVel.y = 0;
+    trgPos = vec2(0);
+    slideVel = vec2(0);
     reset();
-    _pos.x = 0;
-    _pos.y = 0;
-    _pos.z = 5;
+    _pos = vec3(0);
     deg = 0;
     dBodySetPosition(_bodyId, _pos.x, _pos.y, _pos.z);
     setDeg(deg);
@@ -213,9 +211,7 @@ public class Ship: OdeActor, BulletTarget {
       restart();
     restartBulletDisapCnt--;
     dReal *p = dBodyGetPosition(_bodyId);
-    _pos.x = p[0];
-    _pos.y = p[1];
-    _pos.z = p[2];
+    _pos = vec3(p[0], p[1], p[2]);
     if (input.button & TwinStickPadState.Button.B) {
       if (tailNum > 0 && !bPressed) {
         slowLinearVel(SLOW_VELOCITY_RATIO * 10);
@@ -230,8 +226,7 @@ public class Ship: OdeActor, BulletTarget {
     }
     if (_pos.z < -1)
       input.clear();
-    slideVel.x = input.left.x;
-    slideVel.y = input.left.y;
+    slideVel = input.left;
     if (slideVel.magnitude > 1)
       slideVel *= 1. / slideVel.magnitude;
     slideVel *= SLIDE_FORCE_BASE;
@@ -481,8 +476,7 @@ public class Ship: OdeActor, BulletTarget {
   }
 
   public vec2 getTargetPos() {
-    trgPos.x = _pos.x;
-    trgPos.y = _pos.y;
+    trgPos = _pos.xy;
     return trgPos;
   }
 
@@ -572,12 +566,9 @@ public class ShipTail: OdeActor {
   }
 
   public void set(float x, float y, float z, float deg, float sz, dBodyID jointedBodyId) {
-    size.x = size.y = sz;
-    size.z = 1;
+    size = vec3(sz, sz, 1);
     initMassAndGeom();
-    _pos.x = x;
-    _pos.y = y;
-    _pos.z = z;
+    _pos = vec3(x, y, z);
     dBodySetPosition(_bodyId, _pos.x, _pos.y, _pos.z);
     this.deg = deg;
     setDeg(deg);
@@ -592,9 +583,7 @@ public class ShipTail: OdeActor {
 
   public override void move() {
     dReal *p = dBodyGetPosition(_bodyId);
-    _pos.x = p[0];
-    _pos.y = p[1];
-    _pos.z = p[2];
+    _pos = vec3(p[0], p[1], p[2]);
     deg = getDeg();
     getRot(rot);
     addForce(0, 0, -Field.GRAVITY * 0.1f);
