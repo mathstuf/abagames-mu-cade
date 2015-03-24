@@ -74,22 +74,11 @@ public class Screen3D: Screen, SizableScreen {
   // Reset a viewport when the screen is resized.
   public mat4 screenResized() {
     glViewport(0, 0, _width, _height);
-    glMatrixMode(GL_PROJECTION);
     mat4 view = setPerspective();
-    glMatrixMode(GL_MODELVIEW);
     return view;
   }
 
   public mat4 setPerspective() {
-    glLoadIdentity();
-    //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
-    const float ratio = cast(GLfloat) _height / cast(GLfloat) _width;
-    glFrustum(-_nearPlane,
-              _nearPlane,
-              -_nearPlane * ratio,
-              _nearPlane * ratio,
-              0.1f, _farPlane);
-
     return mat4.perspective(
       -_nearPlane, _nearPlane,
       -_nearPlane * ratio, _nearPlane * ratio,
