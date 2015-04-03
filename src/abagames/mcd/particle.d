@@ -97,12 +97,8 @@ public class Particle: Actor {
   public void set(float x, float y, float z,
                   float vx, float vy, float vz, float sz, float r, float g, float b,
                   int c = 60) nothrow {
-    pos.x = x;
-    pos.y = y;
-    pos.z = z;
-    vel.x = vx;
-    vel.y = vy;
-    vel.z = vz;
+    pos = vec3(x, y, z);
+    vel = vec3(vx, vy, vz);
     size = sz;
     deg = rand.nextFloat(PI * 2);
     md = rand.nextSignedFloat(0.3f);
@@ -115,7 +111,7 @@ public class Particle: Actor {
     this.b = b;
     linePoint.setSpectrumParams(r, g, b, 1);
     linePoint.init();
-    size3.x = size3.y = size3.z = size;
+    size3 = vec3(size);
     linePoint.setSize(size3);
     _exists = true;
   }
@@ -282,12 +278,8 @@ public class ConnectedParticle: Actor {
 
   public void set(float x, float y, float z, float d, float s, float r, float g, float b,
                   int c, float bl = 0, ConnectedParticle pp = null, bool decay = true) {
-    _pos.x = x;
-    _pos.y = y;
-    _pos.z = z;
-    _vel.x = -sin(d) * s;
-    _vel.y = cos(d) * s;
-    _vel.z = 0;
+    _pos = vec3(x, y, z);
+    _vel = vec3(-sin(d) * s, cos(d) * s, 0);
     enableRotate = false;
     cnt = c;
     if (cnt < 4)
@@ -331,12 +323,9 @@ public class ConnectedParticle: Actor {
       float lo = ds - baseLength;
       if (lo > 0.01f && ds > 0.01f) {
         float d = atan2(prevParticle.pos.x - pos.x, prevParticle.pos.y - pos.y);
-        float ax = sin(d) * lo * SPRING_CONSTANT;
-        float ay = cos(d) * lo * SPRING_CONSTANT;
-        _vel.x += ax;
-        _vel.y += ay;
-        prevParticle.vel.x -= ax;
-        prevParticle.vel.y -= ay;
+        vec3 a = vec3(sin(d), cos(d), 0) * lo * SPRING_CONSTANT;
+        _vel += a;
+        prevParticle.vel -= a;
       }
     }
     cnt--;
@@ -353,11 +342,11 @@ public class ConnectedParticle: Actor {
       model = model * rot;
     model.translate(_pos.x, _pos.y, _pos.z);
 
+    vec3 pos = (prevParticle.pos - _pos) * 2;
+
     linePoint.beginRecord(model);
     linePoint.record(0, 0, 0);
-    linePoint.record((prevParticle.pos.x - _pos.x) * 2,
-                     (prevParticle.pos.y - _pos.y) * 2,
-                     (prevParticle.pos.z - _pos.z) * 2);
+    linePoint.record(pos.x, pos.y, pos.z);
     linePoint.endRecord();
   }
 
@@ -471,12 +460,8 @@ public class TailParticle: Actor {
   }
 
   public void set(float x, float y, float z, float sz, float r, float g, float b, int c) {
-    pos.x = x;
-    pos.y = y;
-    pos.z = z;
-    vel.x = rand.nextSignedFloat(0.3f);
-    vel.y = 0.3f;
-    vel.z = 0;
+    pos = vec3(x, y, z);
+    vel = vec3(rand.nextSignedFloat(0.3f), 0.3f, 0);
     size = sz;
     deg = rand.nextFloat(PI * 2);
     md = rand.nextSignedFloat(0.3f);
@@ -486,7 +471,7 @@ public class TailParticle: Actor {
     this.b = b;
     linePoint.setSpectrumParams(r, g, b, 0.5f);
     linePoint.init();
-    size3.x = size3.y = size3.z = size;
+    size3 = vec3(size);
     linePoint.setSize(size3);
     _exists = true;
   }
@@ -495,13 +480,9 @@ public class TailParticle: Actor {
     pos += vel;
     float vr = 1.0f - cast(float) cnt / COUNT;
     vr *= 0.25f;
-    vel.x += (trgPos.x - pos.x) * 0.002f;
-    vel.y += (trgPos.y - pos.y) * 0.002f;
-    vel.z += (trgPos.z - pos.z) * 0.002f;
+    vel += (trgPos - pos) * 0.002f;
     vel *= 0.98f;
-    pos.x += (trgPos.x - pos.x) * vr;
-    pos.y += (trgPos.y - pos.y) * vr;
-    pos.z += (trgPos.z - pos.z) * vr;
+    pos += (trgPos - pos) * vr;
     r += (ShipTail.COLOR_R - r) * 0.03f;
     g += (ShipTail.COLOR_G - g) * 0.03f;
     b += (ShipTail.COLOR_B - b) * 0.03f;
@@ -635,12 +616,8 @@ public class StarParticle: Actor {
   }
 
   public void set(float x, float y, float z, float speed, float sz) {
-    pos.x = x;
-    pos.y = y;
-    pos.z = z;
-    vel.x = 0;
-    vel.y = 0;
-    vel.z = -speed;
+    pos = vec3(x, y, z);
+    vel = vec3(0, 0, -speed);
     size = sz;
     _exists = true;
   }
@@ -711,10 +688,8 @@ public class NumIndicator: Actor {
   public void set(int n1, int n2, float x, float y, float vx, float vy, float sz = 0.5f, int c = 300) {
     num1 = n1;
     num2 = n2;
-    pos.x = x;
-    pos.y = y;
-    vel.x = vx;
-    vel.y = vy;
+    pos = vec2(x, y);
+    vel = vec2(vx, vy);
     size = 0.1f;
     trgSize = sz;
     cnt = c;

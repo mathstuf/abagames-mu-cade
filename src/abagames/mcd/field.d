@@ -72,7 +72,7 @@ public class Field {
     this.gameManager = gameManager;
     _size = vec2(20, 15);
     eyePos = vec2(0);
-    eyePosSize = vec2(_size.x - 12, size.y - 9);
+    eyePosSize = _size - vec2(12, 9);
     _titleTexture = new Texture("title.bmp", 0, 0, 5, 1, 64, 64, 4278190080u);
     floorWall = new FloorWall;
     floorWall.setWorld(world);
@@ -305,7 +305,7 @@ public class Field {
     s.addShape(new Square(world, 9999999, 0, 0, -6, _size.x * 2, _size.y * 2, 10));
     s.addGeom(floorWall, world.space);
     cnt = 0;
-    eyePos.x = eyePos.y = 0;
+    eyePos = vec2(0);
   }
 
   public void clear() {
@@ -347,19 +347,18 @@ public class Field {
   }
 
   private void setEyePos() {
-    float tx = ship.pos.x, ty = ship.pos.y;
+    vec2 t = ship.pos;
     if (checkInField(ship.pos)) {
-      if (tx < -eyePosSize.x)
-        tx = -eyePosSize.x;
-      else if (tx > eyePosSize.x)
-        tx = eyePosSize.x;
-      if (ty < -eyePosSize.y)
-        ty = -eyePosSize.y;
-      else if (ty > eyePosSize.y)
-        ty = eyePosSize.y;
+      if (t.x < -eyePosSize.x)
+        t.x = -eyePosSize.x;
+      else if (t.x > eyePosSize.x)
+        t.x = eyePosSize.x;
+      if (t.y < -eyePosSize.y)
+        t.y = -eyePosSize.y;
+      else if (t.y > eyePosSize.y)
+        t.y = eyePosSize.y;
     }
-    eyePos.x += (tx - eyePos.x) * 0.05f;
-    eyePos.y += (ty - eyePos.y) * 0.05f;
+    eyePos += (t - eyePos) * 0.05f;
   }
 
   private mat4 lookAt(float ex, float ey, float ez,

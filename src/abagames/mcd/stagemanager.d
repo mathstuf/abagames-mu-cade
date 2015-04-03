@@ -300,8 +300,7 @@ public class Appearance {
     case EnemyType.BLOCK:
       spec = stageManager.blockSpec;
       appType = AppearanceType.BLOCK;
-      blockAppPos.x = field.size.x * 2;
-      blockAppPos.y = field.size.y * 2;
+      blockAppPos = field.size * 2;
       break;
     default:
       assert(0);

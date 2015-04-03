@@ -139,9 +139,7 @@ public class OdeActor: Actor {
 
   public vec3 getForce() {
     dReal* f = dBodyGetForce(_bodyId);
-    force.x = f[0];
-    force.y = f[1];
-    force.z = f[2];
+    force = vec3(f[0], f[1], f[2]);
     return force;
   }
 
@@ -186,18 +184,14 @@ public class OdeActor: Actor {
 
   public void slowLinearVel(float ratio = VELOCITY_DECAY_RATIO) {
     dReal *vm = dBodyGetLinearVel(_bodyId);
-    vvct.x = vm[0];
-    vvct.y = vm[1];
-    vvct.z = vm[2];
+    vvct = vec3(vm[0], vm[1], vm[2]);
     vvct *= (1 - ratio);
     dBodySetLinearVel(_bodyId, vvct.x, vvct.y, vvct.z);
   }
 
   public void limitLinearVel(float max, float ratio = VELOCITY_DECAY_RATIO) {
     dReal *vm = dBodyGetLinearVel(_bodyId);
-    vvct.x = vm[0];
-    vvct.y = vm[1];
-    vvct.z = vm[2];
+    vvct = vec3(vm[0], vm[1], vm[2]);
     float vs = vvct.magnitude;
     if (vs > max) {
       float p = 1 + (max / vs - 1) * ratio;
@@ -208,18 +202,14 @@ public class OdeActor: Actor {
 
   public void slowAngularVel(float ratio = VELOCITY_DECAY_RATIO) {
     dReal *vm = dBodyGetAngularVel(_bodyId);
-    vvct.x = vm[0];
-    vvct.y = vm[1];
-    vvct.z = vm[2];
+    vvct = vec3(vm[0], vm[1], vm[2]);
     vvct *= (1 - ratio);
     dBodySetAngularVel(_bodyId, vvct.x, vvct.y, vvct.z);
   }
 
   public void limitAngularVel(float max, float ratio = VELOCITY_DECAY_RATIO) {
     dReal *vm = dBodyGetAngularVel(_bodyId);
-    vvct.x = vm[0];
-    vvct.y = vm[1];
-    vvct.z = vm[2];
+    vvct = vec3(vm[0], vm[1], vm[2]);
     float vs = vvct.magnitude;
     if (vs > max) {
       float p = 1 + (max / vs - 1) * ratio;
@@ -310,9 +300,7 @@ public class OdeActor: Actor {
     if (contactJointNum >= CONTACT_JOINT_NUM)
       return;
     ContactJoint* cj = &(contactJoint[contactJointNum]);
-    cj.pos.x = x;
-    cj.pos.y = y;
-    cj.pos.z = z;
+    cj.pos = vec3(x, y, z);
     cj.jointID = id;
     cj.bodyIdx = bodyIdx;
     contactJointNum++;
@@ -326,13 +314,9 @@ public class OdeActor: Actor {
       vec3 ff = contactJoint[i].feedbackForce;
       ff.clear(0);
       if (contactJoint[i].bodyIdx == 1) {
-        ff.x = fb.f1[0];
-        ff.y = fb.f1[1];
-        ff.z = fb.f1[2];
+        ff = vec3(fb.f1[0], fb.f1[1], fb.f1[2]);
       } else {
-        ff.x = fb.f2[0];
-        ff.y = fb.f2[1];
-        ff.z = fb.f2[2];
+        ff = vec3(fb.f2[0], fb.f2[1], fb.f2[2]);
       }
     }
   }

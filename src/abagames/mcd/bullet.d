@@ -138,8 +138,7 @@ public class BulletActor: Actor {
 
   public override void move() {
     vec2 tpos = bullet.target.getTargetPos();
-    Bullet.activeTarget.x = tpos.x;
-    Bullet.activeTarget.y = tpos.y;
+    Bullet.activeTarget = tpos;
     if (isAimTop) {
       float ox = tpos.x - bullet.pos.x;
       bullet.deg = (atan2(-ox, tpos.y - bullet.pos.y) * bullet.xReverse
@@ -174,8 +173,7 @@ public class BulletActor: Actor {
     float my =
       (cos(bullet.deg) * bullet.speed - bullet.acc.y) *
         bullet.getSpeedRank() * bullet.yReverse;
-    bullet.pos.x += mx;
-    bullet.pos.y += my;
+    bullet.pos += vec2(mx, my);
     if (isVisible) {
       if (!field.checkInField(bullet.pos))
         removeForced();
@@ -251,8 +249,7 @@ public class SimpleBullet: OdeActor {
 
   public void set(float x, float y, float d, float sp) {
     super.set();
-    pos.x = x;
-    pos.y = y;
+    pos = vec2(x, y);
     dBodySetPosition(_bodyId, x, y, 0);
     deg = d;
     setDeg(d);
@@ -269,8 +266,7 @@ public class SimpleBullet: OdeActor {
 
   public override void move() {
     dReal *p = dBodyGetPosition(_bodyId);
-    pos.x = p[0];
-    pos.y = p[1];
+    pos = vec2(p[0], p[1]);
     dBodySetPosition(_bodyId, pos.x, pos.y, 0);
     if (removeCnt > 0) {
       removeCnt++;

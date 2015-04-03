@@ -95,16 +95,12 @@ public class Enemy: OdeActor {
     super.set();
     this.spec = spec;
     state.clear();
-    state.pos.x = x;
-    state.pos.y = y;
-    state.pos.z = z;
+    state.pos = vec3(x, y, z);
     state.deg = deg;
-    state.sizeScale.x = sx;
-    state.sizeScale.y = sy;
-    state.sizeScale.z = sz;
+    state.sizeScale = vec3(sx, sy, sz);
     state.massScale = massScale;
     state.type = type;
-    lastForce.x = lastForce.y = lastForce.z = 0;
+    lastForce = vec3(0);
     dBodySetPosition(_bodyId, x, y, z);
     if (spec.rotate2d)
       setDeg(deg);
@@ -136,9 +132,7 @@ public class Enemy: OdeActor {
       return;
     }
     vec3 f = getForce();
-    lastForce.x = f.x;
-    lastForce.y = f.y;
-    lastForce.z = f.z;
+    lastForce = f;
     if (spec.rotate2d && field.checkInField(state.pos))
       setDeg(state.deg);
     spec.recordLinePoints(state, state.linePoint);
@@ -169,9 +163,7 @@ public class Enemy: OdeActor {
 
   public void updateState() {
     dReal *p = dBodyGetPosition(_bodyId);
-    state.pos.x = p[0];
-    state.pos.y = p[1];
-    state.pos.z = p[2];
+    state.pos = vec3(p[0], p[1], p[2]);
     state.deg = getDeg();
     getRot(state.rot);
     dReal* lv = getLinearVel();
@@ -181,8 +173,7 @@ public class Enemy: OdeActor {
       state.angularVel[i] = av[i];
     }
     if (state.topBullet) {
-      state.topBullet.bullet.pos.x = state.pos.x;
-      state.topBullet.bullet.pos.y = state.pos.y;
+      state.topBullet.bullet.pos = state.pos.xy;
       if (state.setTopBulletDirection)
         state.topBullet.bullet.deg = state.deg;
       if (state.setPlumbDirection) {
@@ -225,8 +216,7 @@ public class Enemy: OdeActor {
     for (int i = 0; i < contactJointNum; i++) {
       ContactJoint* cj = &(contactJoint[i]);
       vec3 ff = cj.feedbackForce;
-      ff.x += lastForce.x * 0.9f;
-      ff.y += lastForce.y * 0.9f;
+      ff += lastForce * 0.9f;
       int pn = cast(int) ((fabs(ff.x) + fabs(ff.y)) * 0.01f);
       float bv = pn * 0.1f;
       if (pn <= 0)
@@ -454,12 +444,12 @@ public class EnemyState {
   }
 
   private void clearState() {
-    pos.x = pos.y = pos.z = 0;
+    pos = vec3(0);
     deg = 0;
     rot = mat4.identity;
     for (int i = 0; i < 3; i++)
       linearVel[i] = angularVel[i] = 0;
-    sizeScale.x = sizeScale.y = sizeScale.z = 1;
+    sizeScale = vec3(1);
     massScale = 1;
     destroyable = true;
     cnt = 0;

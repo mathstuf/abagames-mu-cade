@@ -19,8 +19,6 @@ public class Letter {
   static const float LETTER_WIDTH = 2.1f;
   static const float LETTER_HEIGHT = 3.0f;
  private:
-  static const int LETTER_NUM = 44;
-  static const int DISPLAY_LIST_NUM = LETTER_NUM;
   static ShaderProgram program;
   static GLuint vao;
   static GLuint vbo;
